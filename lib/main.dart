@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -247,6 +248,7 @@ class WorkPackagesPage extends StatelessWidget {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
+              showCheckboxColumn: false,
               columns: [
                 DataColumn(label: Text("TYP")),
                 DataColumn(label: Text("ID")),
@@ -266,11 +268,77 @@ class WorkPackagesPage extends StatelessWidget {
                       DataCell(Text(workPackage.links.assignee.title != null ? workPackage.links.assignee.title : "-")),
                       DataCell(Text(workPackage.links.priority.title)),
                     ],
+                    onSelectChanged: (bool selected) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) => WorkPackagePage(
+                            workPackage: workPackage,
+                          ),
+                        ),
+                      );
+                    },
                   )
               ],
             ),
           ),
+          MaterialButton(
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.add),
+                Text("Create new work package"),
+              ],
+            ),
+            onPressed: () {},
+          )
         ],
+      ),
+    );
+  }
+}
+
+class WorkPackagePage extends StatefulWidget {
+  final WorkPackage workPackage;
+
+  const WorkPackagePage({Key key, this.workPackage}) : super(key: key);
+
+  @override
+  _WorkPackagePageState createState() => _WorkPackagePageState();
+}
+
+class _WorkPackagePageState extends State<WorkPackagePage> {
+  TextEditingController _descriptionController = TextEditingController();
+  MarkdownEditorController _markdownEditorController = MarkdownEditorController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.workPackage != null) {
+      _descriptionController.text = widget.workPackage.description.raw;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("${widget.workPackage.links.type.title} ${widget.workPackage.subject}"),
+      ),
+      body: Form(
+        child: ListView(
+          children: <Widget>[
+            Text("DESCRIPTION"),
+            MarkdownEditor(
+              controller: _markdownEditorController,
+              value: widget.workPackage.description.raw,
+              tokenConfigs: [],
+            ),
+            TextFormField(
+              controller: _descriptionController,
+              maxLines: null,
+            )
+          ],
+        ),
       ),
     );
   }

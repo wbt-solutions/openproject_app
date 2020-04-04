@@ -15,6 +15,10 @@ dependencies:
     git: https://code.wbt-solutions.de/sbu/openproject_dart_sdk.git
   flutter_secure_storage: ^3.3.1+1
   cached_network_image: ^2.0.0
+  adhara_markdown:
+    git:
+      url: https://github.com/wbt-solutions/flutter_markdown.git
+      ref: fix-null-text-style
 
 dev_dependencies:
   flutter_test:
