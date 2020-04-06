@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:math' as math;
 
-import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:openproject_app/model/project_tree.dart';
+import 'package:openproject_app/model/widgets.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
@@ -131,6 +130,12 @@ class _StartPageState extends State<StartPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("OpenProject von ${widget.me.name}"),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {},
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -146,6 +151,11 @@ class _StartPageState extends State<StartPage> {
               child: Text(widget.me.name),
             ),
             _buildPanel(_projectTree.rootNode),
+            ListTile(
+              leading: Icon(Icons.add),
+              title: Text("Add Project"),
+              onTap: () {},
+            ),
           ],
         ),
       ),
@@ -164,12 +174,12 @@ class _StartPageState extends State<StartPage> {
       children: node.children.map<ExpansionPanel>((ProjectNode item) {
         return ExpansionPanel(
           headerBuilder: (BuildContext context, bool isExpanded) {
-            String description = item.project.description.raw;
             return ListTile(
               title: Text(item.project.name),
-              subtitle: description.length > 0
-                  ? Text(description.replaceRange(math.min(25, description.length), description.length, "..."))
-                  : null,
+              subtitle: DescriptionWidget(
+                description: item.project.description,
+                maxLength: 25,
+              ),
               onTap: () {
                 Navigator.push(
                   context,
@@ -184,6 +194,22 @@ class _StartPageState extends State<StartPage> {
           isExpanded: item.isExpanded,
         );
       }).toList(),
+    );
+  }
+}
+
+class SettingsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListView(
+          children: <Widget>[
+
+          ],
+        ),
+      ),
     );
   }
 }
@@ -217,11 +243,25 @@ class ProjectPage extends StatelessWidget {
                   );
                 });
               },
+            ),
+            ListTile(
+              title: Text("Calendar"),
+            ),
+            ListTile(
+              title: Text("Members"),
             )
           ],
         ),
       ),
-      body: ListView(),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListView(
+          children: <Widget>[
+            DescriptionWidget(description: project.description),
+            DescriptionWidget(description: project.statusExplanation),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -249,6 +289,7 @@ class WorkPackagesPage extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: DataTable(
               showCheckboxColumn: false,
+              columnSpacing: 10,
               columns: [
                 DataColumn(label: Text("TYP")),
                 DataColumn(label: Text("ID")),
@@ -297,46 +338,23 @@ class WorkPackagesPage extends StatelessWidget {
   }
 }
 
-class WorkPackagePage extends StatefulWidget {
+class WorkPackagePage extends StatelessWidget {
   final WorkPackage workPackage;
 
   const WorkPackagePage({Key key, this.workPackage}) : super(key: key);
 
   @override
-  _WorkPackagePageState createState() => _WorkPackagePageState();
-}
-
-class _WorkPackagePageState extends State<WorkPackagePage> {
-  TextEditingController _descriptionController = TextEditingController();
-  MarkdownEditorController _markdownEditorController = MarkdownEditorController();
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.workPackage != null) {
-      _descriptionController.text = widget.workPackage.description.raw;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${widget.workPackage.links.type.title} ${widget.workPackage.subject}"),
+        title: Text("${workPackage.links.type.title} ${workPackage.subject}"),
       ),
-      body: Form(
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: <Widget>[
             Text("DESCRIPTION"),
-            MarkdownEditor(
-              controller: _markdownEditorController,
-              value: widget.workPackage.description.raw,
-              tokenConfigs: [],
-            ),
-            TextFormField(
-              controller: _descriptionController,
-              maxLines: null,
-            )
+            DescriptionWidget(description: workPackage.description),
           ],
         ),
       ),
