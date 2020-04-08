@@ -205,45 +205,37 @@ class SettingsPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListView(
-          children: <Widget>[
-
-          ],
+          children: <Widget>[],
         ),
       ),
     );
   }
 }
 
-class ProjectPage extends StatelessWidget {
+class ProjectPage extends StatefulWidget {
   final Project project;
 
   const ProjectPage({Key key, @required this.project}) : super(key: key);
 
   @override
+  _ProjectPageState createState() => _ProjectPageState();
+}
+
+class _ProjectPageState extends State<ProjectPage> {
+  static const String filterAll = "[]";
+  static const String filterMe = "[{\"assigneeOrGroup\": {\"operator\":\"=\",\"values\":[\"me\"]}}]";
+
+  String filter = filterAll;
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(project.name),
+        title: Text(widget.project.name),
       ),
       endDrawer: Drawer(
         child: ListView(
           children: <Widget>[
-            ListTile(
-              title: Text("Work Packages"),
-              onTap: () {
-                WorkPackagesApi().apiV3ProjectsIdWorkPackagesGet(project.id).then((WorkPackages wp) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) => WorkPackagesPage(
-                        project: project,
-                        workPackages: wp,
-                      ),
-                    ),
-                  );
-                });
-              },
-            ),
             ListTile(
               title: Text("Calendar"),
             ),
@@ -257,82 +249,107 @@ class ProjectPage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: <Widget>[
-            DescriptionWidget(description: project.description),
-            DescriptionWidget(description: project.statusExplanation),
+            DescriptionWidget(description: widget.project.description),
+            DescriptionWidget(description: widget.project.statusExplanation),
+            Row(
+              children: <Widget>[
+                Text(
+                  "Arbeitspakete",
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: Icon(Icons.person),
+                  onPressed: () {
+                    setState(() {
+                      if (filter == filterAll) {
+                        filter = filterMe;
+                      } else {
+                        filter = filterAll;
+                      }
+                    });
+                  },
+                )
+              ],
+            ),
+            FutureBuilder(
+              future: WorkPackagesApi().apiV3ProjectsIdWorkPackagesGet(widget.project.id, filters: filter),
+              builder: (BuildContext context, AsyncSnapshot<WorkPackages> snapshot) {
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
+                } else {
+                  WorkPackages workPackages = snapshot.data;
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      showCheckboxColumn: false,
+                      columnSpacing: 10,
+                      columns: [
+                        DataColumn(
+                          label: Text("TYP"),
+                        ),
+                        DataColumn(
+                          label: Text("ID"),
+                          numeric: true,
+                        ),
+                        DataColumn(
+                          label: Text("THEMA"),
+                        ),
+                        DataColumn(
+                          label: Text("STATUS"),
+                        ),
+                        DataColumn(
+                          label: Text("ZUGEWIESEN AN"),
+                        ),
+                        DataColumn(
+                          label: Text("PRIORITÄT"),
+                        ),
+                      ],
+                      rows: [
+                        for (WorkPackage workPackage in workPackages.embedded.elements)
+                          DataRow(
+                            cells: [
+                              DataCell(
+                                Text(workPackage.links.type.title),
+                              ),
+                              DataCell(
+                                Text(workPackage.id.toString()),
+                              ),
+                              DataCell(
+                                Text(workPackage.subject),
+                              ),
+                              DataCell(
+                                Text(workPackage.links.status.title),
+                              ),
+                              DataCell(
+                                Text(workPackage.links.assignee.title != null ? workPackage.links.assignee.title : "-"),
+                              ),
+                              DataCell(
+                                Text(workPackage.links.priority.title),
+                              ),
+                            ],
+                            onSelectChanged: (bool selected) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (BuildContext context) => WorkPackagePage(
+                                    workPackage: workPackage,
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                      ],
+                    ),
+                  );
+                }
+              },
+            ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class WorkPackagesPage extends StatelessWidget {
-  final Project project;
-  final WorkPackages workPackages;
-
-  const WorkPackagesPage({Key key, @required this.project, @required this.workPackages}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("${project.name} Work Packages"),
-      ),
-      endDrawer: Drawer(
-        child: ListView(
-          children: <Widget>[],
-        ),
-      ),
-      body: ListView(
-        children: <Widget>[
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              showCheckboxColumn: false,
-              columnSpacing: 10,
-              columns: [
-                DataColumn(label: Text("TYP")),
-                DataColumn(label: Text("ID")),
-                DataColumn(label: Text("THEMA")),
-                DataColumn(label: Text("STATUS")),
-                DataColumn(label: Text("ZUGEWIESEN AN")),
-                DataColumn(label: Text("PRIORITÄT")),
-              ],
-              rows: [
-                for (WorkPackage workPackage in workPackages.embedded.elements)
-                  DataRow(
-                    cells: [
-                      DataCell(Text(workPackage.links.type.title)),
-                      DataCell(Text(workPackage.id.toString())),
-                      DataCell(Text(workPackage.subject)),
-                      DataCell(Text(workPackage.links.status.title)),
-                      DataCell(Text(workPackage.links.assignee.title != null ? workPackage.links.assignee.title : "-")),
-                      DataCell(Text(workPackage.links.priority.title)),
-                    ],
-                    onSelectChanged: (bool selected) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) => WorkPackagePage(
-                            workPackage: workPackage,
-                          ),
-                        ),
-                      );
-                    },
-                  )
-              ],
-            ),
-          ),
-          MaterialButton(
-            child: Row(
-              children: <Widget>[
-                Icon(Icons.add),
-                Text("Create new work package"),
-              ],
-            ),
-            onPressed: () {},
-          )
-        ],
       ),
     );
   }
@@ -349,11 +366,42 @@ class WorkPackagePage extends StatelessWidget {
       appBar: AppBar(
         title: Text("${workPackage.links.type.title} ${workPackage.subject}"),
       ),
+      endDrawer: Drawer(
+        child: ListView(
+          children: <Widget>[
+            ListTile(
+              leading: Icon(Icons.delete),
+              title: Text("Löschen"),
+              onTap: () {
+                WorkPackagesApi().apiV3WorkPackagesIdDelete(workPackage.id).then((value) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                });
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text("Mir zuweisen"),
+            ),
+            ListTile(
+              leading: Icon(Icons.archive),
+              title: Text("Archivieren"),
+            ),
+            ListTile(
+              leading: Icon(Icons.business_center),
+              title: Text("Status setzen"),
+            ),
+          ],
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: <Widget>[
-            Text("DESCRIPTION"),
+            Text(
+              "Beschreibung",
+              style: Theme.of(context).textTheme.headline5,
+            ),
             DescriptionWidget(description: workPackage.description),
           ],
         ),
