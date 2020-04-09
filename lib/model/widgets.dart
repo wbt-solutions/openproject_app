@@ -17,13 +17,13 @@ class DescriptionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String text = description.raw;
-    if (maxLength != null && text.length > maxLength)
-      text = text.replaceRange(math.min(maxLength, text.length), text.length, "...");
-    if (text.length == 0)
+    if (text == null || text.length == 0)
       return Container(
         width: 0,
         height: 0,
       );
+    if (maxLength != null && text.length > maxLength)
+      text = text.replaceRange(math.min(maxLength, text.length), text.length, "...");
     switch (description.format) {
       case "markdown":
         return MarkdownBody(data: text);
