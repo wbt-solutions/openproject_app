@@ -416,6 +416,45 @@ class WorkPackagePage extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.business_center),
               title: Text("Status setzen"),
+              onTap: () {
+                StatusesApi().apiV3StatusesGet().then((Statuses statuses) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return SimpleDialog(
+                        title: Text("Wähle den Status:"),
+                        children: <Widget>[
+                          for (Status status in statuses.embedded.elements)
+                            SimpleDialogOption(
+                              child: Text(status.name),
+                              onPressed: () {
+                                WorkPackagesApi()
+                                    .apiV3WorkPackagesIdPatch(
+                                  workPackage.id,
+                                  body: WorkPackage()
+                                    ..lockVersion = workPackage.lockVersion
+                                    ..links = WorkPackageLinks()
+                                    ..links.status = Link()
+                                    ..links.status.href = status.links.self.href,
+                                )
+                                    .then((WorkPackage workPackage) {
+                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
+                                }).catchError((Object error) {
+                                  if (error is ApiException) {
+                                    print(error.message);
+                                  } else {
+                                    throw error;
+                                  }
+                                });
+                              },
+                            ),
+                        ],
+                      );
+                    },
+                  );
+                });
+              },
             ),
           ],
         ),
@@ -429,6 +468,11 @@ class WorkPackagePage extends StatelessWidget {
               style: Theme.of(context).textTheme.headline5,
             ),
             DescriptionWidget(description: workPackage.description),
+            Text(
+              "Status",
+              style: Theme.of(context).textTheme.headline5,
+            ),
+            Text(workPackage.links.status.title),
           ],
         ),
       ),

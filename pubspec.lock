@@ -182,7 +182,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "628c3d41425447099e7aa118f40ce23c1c67c749"
+      resolved-ref: "8d19f4256d386a5819f90994667fc93171c3477a"
       url: "https://code.wbt-solutions.de/sbu/openproject_dart_sdk.git"
     source: git
     version: "1.0.0"
