@@ -150,7 +150,7 @@ class _StartPageState extends State<StartPage> {
               ),
               child: Text(widget.me.name),
             ),
-            _buildPanel(_projectTree.rootNode),
+            _buildPanel(widget.me, _projectTree.rootNode),
             ListTile(
               leading: Icon(Icons.add),
               title: Text("Add Project"),
@@ -162,7 +162,7 @@ class _StartPageState extends State<StartPage> {
     );
   }
 
-  Widget _buildPanel(ProjectNode node) {
+  Widget _buildPanel(User me, ProjectNode node) {
     if (node.children.length == 0) return Text("Keine Subprojekte vorhanden");
     return ExpansionPanelList(
       expandedHeaderPadding: EdgeInsets.only(left: 9),
@@ -184,13 +184,16 @@ class _StartPageState extends State<StartPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (BuildContext context) => ProjectPage(project: item.project),
+                    builder: (BuildContext context) => ProjectPage(
+                      project: item.project,
+                      me: me,
+                    ),
                   ),
                 );
               },
             );
           },
-          body: _buildPanel(item),
+          body: _buildPanel(me, item),
           isExpanded: item.isExpanded,
         );
       }).toList(),
@@ -213,9 +216,10 @@ class SettingsPage extends StatelessWidget {
 }
 
 class ProjectPage extends StatefulWidget {
+  final User me;
   final Project project;
 
-  const ProjectPage({Key key, @required this.project}) : super(key: key);
+  const ProjectPage({Key key, @required this.project, @required this.me}) : super(key: key);
 
   @override
   _ProjectPageState createState() => _ProjectPageState();
@@ -337,6 +341,7 @@ class _ProjectPageState extends State<ProjectPage> {
                                 MaterialPageRoute(
                                   builder: (BuildContext context) => WorkPackagePage(
                                     workPackage: workPackage,
+                                    me: widget.me,
                                   ),
                                 ),
                               );
@@ -356,9 +361,10 @@ class _ProjectPageState extends State<ProjectPage> {
 }
 
 class WorkPackagePage extends StatelessWidget {
+  final User me;
   final WorkPackage workPackage;
 
-  const WorkPackagePage({Key key, this.workPackage}) : super(key: key);
+  const WorkPackagePage({Key key, @required this.workPackage, @required this.me}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -382,6 +388,26 @@ class WorkPackagePage extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.person),
               title: Text("Mir zuweisen"),
+              onTap: () {
+                WorkPackagesApi()
+                    .apiV3WorkPackagesIdPatch(
+                  workPackage.id,
+                  body: WorkPackage()
+                    ..lockVersion = workPackage.lockVersion
+                    ..links = WorkPackageLinks()
+                    ..links.assignee = Link()
+                    ..links.assignee.href = me.links.self.href,
+                )
+                    .then((WorkPackage workPackage) {
+                  Navigator.of(context).pop();
+                }).catchError((Object error) {
+                  if (error is ApiException) {
+                    print(error.message);
+                  } else {
+                    throw error;
+                  }
+                });
+              },
             ),
             ListTile(
               leading: Icon(Icons.archive),
