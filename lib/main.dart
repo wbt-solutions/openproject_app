@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -154,7 +155,14 @@ class _StartPageState extends State<StartPage> {
             ListTile(
               leading: Icon(Icons.add),
               title: Text("Add Project"),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => EditProjectPage(),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -209,6 +217,65 @@ class SettingsPage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: <Widget>[],
+        ),
+      ),
+    );
+  }
+}
+
+class EditProjectPage extends StatefulWidget {
+  final Project project;
+
+  const EditProjectPage({Key key, this.project}) : super(key: key);
+
+  @override
+  _EditProjectPageState createState() => _EditProjectPageState();
+}
+
+class _EditProjectPageState extends State<EditProjectPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.project == null ? "Neues Projekt" : "${widget.project.name} bearbeiten"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Form(
+          child: ListView(
+            children: <Widget>[
+              Text("Name"),
+              TextFormField(),
+              Text("Subprojekt von"),
+              DropdownButtonFormField(
+                items: [],
+                onChanged: (value) {},
+              ),
+              Text("Beschreibung"),
+              MarkdownEditor(
+                tokenConfigs: [], // TODO
+              ),
+              Text("Identifier"),
+              TextFormField(),
+              Text("Public"),
+              Checkbox(
+                value: false,
+                onChanged: (bool val) {},
+              ),
+              Text("Status"),
+              DropdownButtonFormField(
+                items: [],
+                onChanged: (value) {},
+              ),
+              Text("Status Beschreibung"),
+              MarkdownEditor(
+                tokenConfigs: [], // TODO
+              ),
+              MaterialButton(
+                onPressed: () {},
+              ),
+            ],
+          ),
         ),
       ),
     );
