@@ -233,6 +233,44 @@ class EditProjectPage extends StatefulWidget {
 }
 
 class _EditProjectPageState extends State<EditProjectPage> {
+  TextEditingController _nameController = TextEditingController();
+  List<DropdownMenuItem<Project>> projectMenuItems = [];
+  Project _parenProject;
+  MarkdownEditorController _descriptionController = MarkdownEditorController();
+  TextEditingController _identifierController = TextEditingController();
+  bool _public = false;
+  String _status;
+  MarkdownEditorController _statusDescriptionController = MarkdownEditorController();
+
+  @override
+  void initState() {
+    super.initState();
+    ProjectsApi()
+        .apiV3ProjectsAvailableParentProjectsGet(
+      of_: widget.project != null ? widget.project.identifier : null,
+    )
+        .then((Projects projects) {
+      for (Project project in projects.embedded.elements) {
+        if (widget.project.links.parent.href != null && project.links.self.href == widget.project.links.parent.href) {
+          _parenProject = project;
+        }
+        projectMenuItems.add(DropdownMenuItem(
+          child: Text(project.name),
+          value: project,
+        ));
+        setState(() {
+
+        });
+      }
+    });
+    if (widget.project != null) {
+      _nameController.text = widget.project.name;
+      _identifierController.text = widget.project.identifier;
+      _public = widget.project.public;
+      _status = widget.project.status;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -245,34 +283,87 @@ class _EditProjectPageState extends State<EditProjectPage> {
           child: ListView(
             children: <Widget>[
               Text("Name"),
-              TextFormField(),
+              TextFormField(
+                controller: _nameController,
+              ),
               Text("Subprojekt von"),
               DropdownButtonFormField(
-                items: [],
-                onChanged: (value) {},
+                items: projectMenuItems,
+                value: _parenProject,
+                onChanged: (Project project) {
+                  _parenProject = project;
+                },
               ),
               Text("Beschreibung"),
               MarkdownEditor(
+                controller: _descriptionController,
+                value: widget.project != null ? widget.project.description.raw : null,
                 tokenConfigs: [], // TODO
               ),
               Text("Identifier"),
-              TextFormField(),
+              TextFormField(
+                controller: _identifierController,
+              ),
               Text("Public"),
               Checkbox(
-                value: false,
-                onChanged: (bool val) {},
+                value: _public,
+                onChanged: (bool val) {
+                  setState(() {
+                    _public = val;
+                  });
+                },
               ),
               Text("Status"),
               DropdownButtonFormField(
-                items: [],
-                onChanged: (value) {},
+                items: [
+                  DropdownMenuItem(
+                    child: Text("on track"),
+                    value: "on track",
+                  ),
+                  DropdownMenuItem(
+                    child: Text("at risk"),
+                    value: "at risk",
+                  ),
+                  DropdownMenuItem(
+                    child: Text("off track"),
+                    value: "off track",
+                  ),
+                ],
+                value: _status,
+                onChanged: (String status) {
+                  _status = status;
+                },
               ),
               Text("Status Beschreibung"),
               MarkdownEditor(
+                controller: _statusDescriptionController,
+                value: widget.project != null ? widget.project.statusExplanation.raw : null,
                 tokenConfigs: [], // TODO
               ),
               MaterialButton(
-                onPressed: () {},
+                child: Text(widget.project == null ? "Erstellen" : "Speichern"),
+                onPressed: () {
+                  Project sendProject = Project();
+                  sendProject.name = _nameController.text;
+                  sendProject.links = ProjectLinks();
+                  if (_parenProject != null) {
+                    sendProject.links.parent = Link();
+                    sendProject.links.parent.href = _parenProject.links.self.href;
+                  }
+                  sendProject.description = Description();
+                  sendProject.description.raw = _descriptionController.text;
+                  sendProject.identifier = _identifierController.text;
+                  sendProject.public = _public;
+                  sendProject.status = _status;
+                  sendProject.statusExplanation = Description();
+                  sendProject.statusExplanation.raw = _statusDescriptionController.text;
+
+                  if (widget.project == null) {
+                    ProjectsApi().apiV3ProjectsPost(sendProject);
+                  } else {
+                    ProjectsApi().apiV3ProjectsIdPatch(widget.project.id, sendProject);
+                  }
+                },
               ),
             ],
           ),
@@ -307,6 +398,20 @@ class _ProjectPageState extends State<ProjectPage> {
       endDrawer: Drawer(
         child: ListView(
           children: <Widget>[
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text("Bearbeiten"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => EditProjectPage(
+                      project: widget.project,
+                    ),
+                  ),
+                );
+              },
+            ),
             ListTile(
               title: Text("Calendar"),
             ),
