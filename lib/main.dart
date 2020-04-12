@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:adhara_markdown/adhara_markdown.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:openproject_app/model/project_tree.dart';
@@ -82,6 +81,7 @@ class _LoginPageState extends State<LoginPage> {
               Text("Host:"),
               TextFormField(
                 controller: _hostController,
+                autocorrect: false,
                 validator: (value) {
                   if (!Uri.parse(value).isAbsolute) {
                     return "Bitte gebe einen validen Host ein";
@@ -92,6 +92,7 @@ class _LoginPageState extends State<LoginPage> {
               Text("API Key:"),
               TextFormField(
                 controller: _apiKeyController,
+                autocorrect: false,
               ),
               MaterialButton(
                 child: Text("Anmelden"),
@@ -134,7 +135,14 @@ class _StartPageState extends State<StartPage> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.settings),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) => SettingsPage(),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -142,13 +150,6 @@ class _StartPageState extends State<StartPage> {
         child: ListView(
           children: <Widget>[
             DrawerHeader(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: CachedNetworkImageProvider(
-                    widget.me.avatar,
-                  ),
-                ),
-              ),
               child: Text(widget.me.name),
             ),
             _buildPanel(widget.me, _projectTree.rootNode),
@@ -213,10 +214,22 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Einstellungen"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListView(
-          children: <Widget>[],
+          children: <Widget>[
+            ListTile(
+              title: Text("Lizenzen"),
+              onTap: () => showLicensePage(context: context),
+            ),
+            ListTile(
+              title: Text("Über"),
+              onTap: () => showAboutDialog(context: context),
+            ),
+          ],
         ),
       ),
     );
@@ -251,16 +264,16 @@ class _EditProjectPageState extends State<EditProjectPage> {
     )
         .then((Projects projects) {
       for (Project project in projects.embedded.elements) {
-        if (widget.project.links.parent.href != null && project.links.self.href == widget.project.links.parent.href) {
+        if (widget.project != null &&
+            widget.project.links.parent.href != null &&
+            project.links.self.href == widget.project.links.parent.href) {
           _parenProject = project;
         }
         projectMenuItems.add(DropdownMenuItem(
           child: Text(project.name),
           value: project,
         ));
-        setState(() {
-
-        });
+        setState(() {});
       }
     });
     if (widget.project != null) {
@@ -410,6 +423,16 @@ class _ProjectPageState extends State<ProjectPage> {
                     ),
                   ),
                 );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete),
+              title: Text("Löschen"),
+              onTap: () {
+                ProjectsApi().apiV3ProjectsIdDelete(widget.project.id).then((value) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                });
               },
             ),
             ListTile(
