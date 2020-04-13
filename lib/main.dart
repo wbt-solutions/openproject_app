@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:openproject_app/model/project_tree.dart';
 import 'package:openproject_app/model/widgets.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
+final LocalAuthentication authentication = LocalAuthentication();
 
 void main() => runApp(MyApp());
 
@@ -39,7 +41,22 @@ class _LoginPageState extends State<LoginPage> {
     storage.read(key: "host").then((String host) async {
       if (host != null) {
         storage.read(key: "apikey").then((String apiKey) {
-          _login(host, apiKey);
+          storage.read(key: "authenticateLocal").then((String value) {
+            if (value == "true") {
+              authentication
+                  .authenticateWithBiometrics(
+                localizedReason: "Sie haben Authnetication aktiviert",
+                sensitiveTransaction: true,
+              )
+                  .then((bool value) {
+                if (value) {
+                  _login(host, apiKey);
+                }
+              });
+            } else {
+              _login(host, apiKey);
+            }
+          });
         });
       }
     });
@@ -210,7 +227,24 @@ class _StartPageState extends State<StartPage> {
   }
 }
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool authOnStart = false;
+
+  @override
+  void initState() {
+    super.initState();
+    storage.read(key: "authenticateLocal").then((String value) {
+      setState(() {
+        authOnStart = value == "true";
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -221,6 +255,16 @@ class SettingsPage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: <Widget>[
+            CheckboxListTile(
+              title: Text("Authentifizieren"),
+              value: authOnStart,
+              onChanged: (bool val) {
+                setState(() {
+                  authOnStart = val;
+                });
+                storage.write(key: "authenticateLocal", value: val.toString());
+              },
+            ),
             ListTile(
               title: Text("Lizenzen"),
               onTap: () => showLicensePage(context: context),
