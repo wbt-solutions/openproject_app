@@ -92,6 +92,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "5.1.0"
+  file_picker:
+    dependency: "direct main"
+    description:
+      name: file_picker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.6.2"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -197,7 +204,7 @@ packages:
       path: "."
       ref: HEAD
       resolved-ref: fb9bc25ba868ee5ab8892216ac2cbf74d88519e6
-      url: "https://code.wbt-solutions.de/sbu/openproject_dart_sdk.git"
+      url: "https://github.com/wbt-solutions/openproject_dart_sdk.git"
     source: git
     version: "1.0.0"
   path:

@@ -4,8 +4,8 @@ import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:openproject_app/model/project_tree.dart';
-import 'package:openproject_app/model/widgets.dart';
+import 'package:openproject_app/project_tree.dart';
+import 'package:openproject_app/widgets.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
@@ -291,7 +291,6 @@ class EditProjectPage extends StatefulWidget {
 
 class _EditProjectPageState extends State<EditProjectPage> {
   TextEditingController _nameController = TextEditingController();
-  List<DropdownMenuItem<Project>> projectMenuItems = [];
   Project _parenProject;
   MarkdownEditorController _descriptionController = MarkdownEditorController();
   TextEditingController _identifierController = TextEditingController();
@@ -302,24 +301,6 @@ class _EditProjectPageState extends State<EditProjectPage> {
   @override
   void initState() {
     super.initState();
-    ProjectsApi()
-        .apiV3ProjectsAvailableParentProjectsGet(
-      of_: widget.project != null ? widget.project.identifier : null,
-    )
-        .then((Projects projects) {
-      for (Project project in projects.embedded.elements) {
-        if (widget.project != null &&
-            widget.project.links.parent.href != null &&
-            project.links.self.href == widget.project.links.parent.href) {
-          _parenProject = project;
-        }
-        projectMenuItems.add(DropdownMenuItem(
-          child: Text(project.name),
-          value: project,
-        ));
-        setState(() {});
-      }
-    });
     if (widget.project != null) {
       _nameController.text = widget.project.name;
       _identifierController.text = widget.project.identifier;
@@ -344,9 +325,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 controller: _nameController,
               ),
               Text("Subprojekt von"),
-              DropdownButtonFormField(
-                items: projectMenuItems,
-                value: _parenProject,
+              ProjectsDropDownFormField(
                 onChanged: (Project project) {
                   _parenProject = project;
                 },
@@ -579,6 +558,7 @@ class _ProjectPageState extends State<ProjectPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (BuildContext context) => WorkPackagePage(
+                                    project: widget.project,
                                     workPackage: workPackage,
                                     me: widget.me,
                                   ),
@@ -601,9 +581,11 @@ class _ProjectPageState extends State<ProjectPage> {
 
 class WorkPackagePage extends StatelessWidget {
   final User me;
+  final Project project;
   final WorkPackage workPackage;
 
-  const WorkPackagePage({Key key, @required this.workPackage, @required this.me}) : super(key: key);
+  const WorkPackagePage({Key key, @required this.workPackage, @required this.me, @required this.project})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -614,6 +596,21 @@ class WorkPackagePage extends StatelessWidget {
       endDrawer: Drawer(
         child: ListView(
           children: <Widget>[
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text("Bearbeiten"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => EditWorkPackagePage(
+                      workPackage: workPackage,
+                      project: project,
+                    ),
+                  ),
+                );
+              },
+            ),
             ListTile(
               leading: Icon(Icons.delete),
               title: Text("Löschen"),
@@ -713,6 +710,49 @@ class WorkPackagePage extends StatelessWidget {
             ),
             Text(workPackage.links.status.title),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class EditWorkPackagePage extends StatefulWidget {
+  final Project project;
+  final WorkPackage workPackage;
+
+  const EditWorkPackagePage({Key key, this.workPackage, @required this.project}) : super(key: key);
+
+  @override
+  _EditWorkPackagePageState createState() => _EditWorkPackagePageState();
+}
+
+class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
+  TextEditingController _subjectController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.workPackage == null ? "Neues WorkPackage" : "${widget.workPackage.subject} bearbeiten"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Form(
+          child: ListView(
+            children: <Widget>[
+              TypesDropDownFormField(
+                project: widget.project,
+                onChanged: (WPType type) {
+                  print(type.name);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
