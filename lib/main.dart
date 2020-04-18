@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:openproject_app/project_tree.dart';
+import 'package:openproject_app/utils.dart';
 import 'package:openproject_app/widgets.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
@@ -325,9 +326,19 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 controller: _nameController,
               ),
               Text("Subprojekt von"),
-              ProjectsDropDownFormField(
+              CollectionDropDownFormField<Projects, Project>(
+                currentItemLink: widget.project.links.parent,
                 onChanged: (Project project) {
                   _parenProject = project;
+                },
+                project: widget.project,
+                itemWidget: (BuildContext context, Project project) {
+                  return Text(project.name);
+                },
+                resolveAllItems: () {
+                  return ProjectsApi().apiV3ProjectsAvailableParentProjectsGet(
+                    of_: widget.project != null ? widget.project.identifier : null,
+                  );
                 },
               ),
               Text("Beschreibung"),
@@ -745,10 +756,19 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
         child: Form(
           child: ListView(
             children: <Widget>[
-              TypesDropDownFormField(
+              Text("Type"),
+              CollectionDropDownFormField<WPTypes, WPType>(
+                currentItemLink: widget.workPackage.links.type,
                 project: widget.project,
                 onChanged: (WPType type) {
                   print(type.name);
+                },
+                resolveAllItems: () => TypesApi().apiV3ProjectsProjectIdTypesGet(widget.project.id),
+                itemWidget: (BuildContext context, WPType type) {
+                  return Text(
+                    type.name,
+                    style: TextStyle(color: HexColor.fromHex(type.color)),
+                  );
                 },
               ),
             ],

@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:openproject_app/utils.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 class DescriptionWidget extends StatelessWidget {
@@ -36,130 +36,70 @@ class DescriptionWidget extends StatelessWidget {
   }
 }
 
-class ProjectsDropDownFormField extends StatefulWidget {
+typedef ItemBuilder<I> = Widget Function(BuildContext context, I child);
+
+class CollectionDropDownFormField<C, I> extends StatefulWidget {
   final Project project;
-  final ValueChanged<Project> onChanged;
+  final Link currentItemLink;
+  final AsyncValueGetter<C> resolveAllItems;
+  final ValueChanged<I> onChanged;
+  final ItemBuilder<I> itemWidget;
 
-  const ProjectsDropDownFormField({
+  const CollectionDropDownFormField({
     Key key,
-    this.project,
-    @required this.onChanged,
-  }) : super(key: key);
-
-  @override
-  _ProjectsDropDownFormFieldState createState() => _ProjectsDropDownFormFieldState();
-}
-
-class _ProjectsDropDownFormFieldState extends State<ProjectsDropDownFormField> {
-  Future<List<DropdownMenuItem<Project>>> _projectMenuItems;
-  Project _currentParent;
-
-  Future<List<DropdownMenuItem<Project>>> fetch() async {
-    Projects projects = await ProjectsApi().apiV3ProjectsAvailableParentProjectsGet(
-      of_: widget.project != null ? widget.project.identifier : null,
-    );
-    List<DropdownMenuItem<Project>> projectMenuItems = [];
-    for (Project project in projects.embedded.elements) {
-      if (widget.project != null &&
-          widget.project.links.parent.href != null &&
-          project.links.self.href == widget.project.links.parent.href) {
-        _currentParent = project;
-        widget.onChanged(project);
-      }
-      projectMenuItems.add(DropdownMenuItem(
-        child: Text(project.name),
-        value: project, // TODO Removing this selects the right project in the dropdown
-      ));
-    }
-    return projectMenuItems;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _projectMenuItems = fetch();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<DropdownMenuItem<Project>>>(
-      future: _projectMenuItems,
-      builder: (BuildContext context, AsyncSnapshot<List<DropdownMenuItem<Project>>> snapshot) {
-        return DropdownButtonFormField(
-          items: snapshot.data,
-          value: _currentParent,
-          onChanged: (Project project) {
-            setState(() {
-              _currentParent = project;
-            });
-            widget.onChanged(project);
-          },
-        );
-      },
-    );
-  }
-}
-
-class TypesDropDownFormField extends StatefulWidget {
-  final Project project;
-  final Link currentStatus;
-  final ValueChanged<WPType> onChanged;
-
-  const TypesDropDownFormField({
-    Key key,
-    this.currentStatus,
+    this.currentItemLink,
     @required this.project,
     @required this.onChanged,
+    @required this.resolveAllItems,
+    @required this.itemWidget,
   }) : super(key: key);
 
   @override
-  _TypesDropDownFormFieldState createState() => _TypesDropDownFormFieldState();
+  _CollectionDropDownFormFieldState<C, I> createState() => _CollectionDropDownFormFieldState<C, I>();
 }
 
-class _TypesDropDownFormFieldState extends State<TypesDropDownFormField> {
-  Future<List<DropdownMenuItem<WPType>>> _typeMenuItems;
-  WPType _currentType;
+class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFormField<C, I>> {
+  Future<List<DropdownMenuItem<I>>> _menuItems;
+  I _currentItem;
 
-  Future<List<DropdownMenuItem<WPType>>> fetch() async {
-    WPTypes types = await TypesApi().apiV3ProjectsProjectIdTypesGet(widget.project.id);
-    List<DropdownMenuItem<WPType>> typeMenuItems = [];
-    for (WPType type in types.embedded.elements) {
-      if (widget.currentStatus != null &&
-          widget.currentStatus.href != null &&
-          type.links.self.href == widget.currentStatus.href) {
-        _currentType = type;
-        widget.onChanged(type);
+  Future<List<DropdownMenuItem<I>>> fetch(BuildContext context) async {
+    var items = (await widget.resolveAllItems())
+        as dynamic; // We all know it's the collection we get delivered, but to have the compiler silent we say we get something we don't know
+    List<DropdownMenuItem<I>> menuItems = [];
+    for (var item in items.embedded.elements) {
+      if (widget.currentItemLink != null &&
+          widget.currentItemLink.href != null &&
+          item.links.self.href == widget.currentItemLink.href) {
+        _currentItem = item;
+        widget.onChanged(item);
       }
-      typeMenuItems.add(DropdownMenuItem(
-        child: Text(
-          type.name,
-          style: TextStyle(color: HexColor.fromHex(type.color)),
-        ),
-        value: type,
+      menuItems.add(DropdownMenuItem<I>(
+        child: widget.itemWidget(context, item),
+        value: item,
       ));
     }
-    return typeMenuItems;
+    return menuItems;
   }
 
   @override
   void initState() {
     super.initState();
-    _typeMenuItems = fetch();
+    _menuItems = fetch(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<DropdownMenuItem<WPType>>>(
-      future: _typeMenuItems,
-      builder: (BuildContext context, AsyncSnapshot<List<DropdownMenuItem<WPType>>> snapshot) {
+    return FutureBuilder<List<DropdownMenuItem<I>>>(
+      future: _menuItems,
+      builder: (BuildContext context, AsyncSnapshot<List<DropdownMenuItem<I>>> snapshot) {
         return DropdownButtonFormField(
           items: snapshot.data,
-          value: _currentType,
-          onChanged: (WPType type) {
+          value: _currentItem,
+          onChanged: (I item) {
             setState(() {
-              _currentType = type;
+              _currentItem = item;
             });
-            widget.onChanged(type);
+            widget.onChanged(item);
           },
         );
       },
