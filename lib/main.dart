@@ -756,6 +756,18 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
         child: Form(
           child: ListView(
             children: <Widget>[
+              Text("Statuses"),
+              CollectionDropDownFormField<Statuses, Status>(
+                currentItemLink: widget.workPackage.links.status,
+                project: widget.project,
+                onChanged: (Status status) {
+                  print(status.name);
+                },
+                resolveAllItems: () => StatusesApi().apiV3StatusesGet(),
+                itemWidget: (BuildContext context, Status status) {
+                  return Text(status.name);
+                },
+              ),
               Text("Type"),
               CollectionDropDownFormField<WPTypes, WPType>(
                 currentItemLink: widget.workPackage.links.type,
@@ -769,6 +781,39 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                     type.name,
                     style: TextStyle(color: HexColor.fromHex(type.color)),
                   );
+                },
+              ),
+              Text("Subject"),
+              TextFormField(),
+              Text("Description"),
+              MarkdownEditor(
+                tokenConfigs: [],
+              ),
+              Divider(),
+              Text("Assignee"),
+              CollectionDropDownFormField<Users, User>(
+                currentItemLink: widget.workPackage.links.assignee,
+                project: widget.project,
+                onChanged: (User user) {
+                  print(user.name);
+                },
+                resolveAllItems: () =>
+                    WorkPackagesApi().apiV3ProjectsProjectIdWorkPackagesAvailableAssigneesGet(widget.project.id),
+                itemWidget: (BuildContext context, User user) {
+                  return Text(user.name);
+                },
+              ),
+              Text("Accountable"),
+              CollectionDropDownFormField<Users, User>(
+                currentItemLink: widget.workPackage.links.responsible,
+                project: widget.project,
+                onChanged: (User user) {
+                  print(user.name);
+                },
+                resolveAllItems: () =>
+                    WorkPackagesApi().apiV3ProjectsProjectIdWorkPackagesAvailableResponsiblesGet(widget.project.id),
+                itemWidget: (BuildContext context, User user) {
+                  return Text(user.name);
                 },
               ),
             ],
