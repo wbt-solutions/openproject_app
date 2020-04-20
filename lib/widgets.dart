@@ -44,6 +44,7 @@ class CollectionDropDownFormField<C, I> extends StatefulWidget {
   final AsyncValueGetter<C> resolveAllItems;
   final ValueChanged<I> onChanged;
   final ItemBuilder<I> itemWidget;
+  final int defaultIndex;
 
   const CollectionDropDownFormField({
     Key key,
@@ -52,6 +53,7 @@ class CollectionDropDownFormField<C, I> extends StatefulWidget {
     @required this.onChanged,
     @required this.resolveAllItems,
     @required this.itemWidget,
+    this.defaultIndex,
   }) : super(key: key);
 
   @override
@@ -78,6 +80,8 @@ class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFo
         value: item,
       ));
     }
+    if (widget.defaultIndex != null && _currentItem != null)
+      _currentItem = items.embedded.elements[widget.defaultIndex];
     return menuItems;
   }
 

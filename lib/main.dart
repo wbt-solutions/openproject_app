@@ -343,6 +343,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
               ),
               Text("Beschreibung"),
               MarkdownEditor(
+                autoFocus: false,
                 controller: _descriptionController,
                 value: widget.project != null ? widget.project.description.raw : null,
                 tokenConfigs: [], // TODO
@@ -383,6 +384,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
               ),
               Text("Status Beschreibung"),
               MarkdownEditor(
+                autoFocus: false,
                 controller: _statusDescriptionController,
                 value: widget.project != null ? widget.project.statusExplanation.raw : null,
                 tokenConfigs: [], // TODO
@@ -767,6 +769,7 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 itemWidget: (BuildContext context, Status status) {
                   return Text(status.name);
                 },
+                defaultIndex: widget.project == null ? 0 : null,
               ),
               Text("Type"),
               CollectionDropDownFormField<WPTypes, WPType>(
@@ -782,11 +785,13 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                     style: TextStyle(color: HexColor.fromHex(type.color)),
                   );
                 },
+                defaultIndex: widget.project == null ? 0 : null,
               ),
               Text("Subject"),
               TextFormField(),
               Text("Description"),
               MarkdownEditor(
+                autoFocus: false,
                 tokenConfigs: [],
               ),
               Divider(),
@@ -816,6 +821,67 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                   return Text(user.name);
                 },
               ),
+              Divider(),
+              Text("Estimated time"),
+              TextFormField(
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+              ),
+              Text("Remaining Hours"),
+              TextFormField(
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+              ),
+              Divider(),
+              Text("Date"),
+              TextFormField(
+                onTap: () {
+                  // TODO
+                  showDatePicker(
+                    context: context,
+                    initialDate: null,
+                    firstDate: null,
+                    lastDate: null,
+                  );
+                },
+              ),
+              Text("-"),
+              TextFormField(
+                onTap: () {
+                  // TODO
+                  showDatePicker(
+                    context: context,
+                    initialDate: null,
+                    firstDate: null,
+                    lastDate: null,
+                  );
+                },
+              ),
+              Text("Progess"),
+              TextFormField(),
+              Text("Category"),
+              CollectionDropDownFormField<Categories, Category>(
+                currentItemLink: widget.workPackage.links.category,
+                project: widget.project,
+                onChanged: (Category category) {
+                  print(category.name);
+                },
+                resolveAllItems: () => CategoriesApi().apiV3ProjectsProjectIdCategoriesGet(widget.project.id),
+                itemWidget: (BuildContext context, Category category) {
+                  return Text(category.name);
+                },
+              ),
+              Text("Versions"),
+              CollectionDropDownFormField<Versions, Version>(
+                currentItemLink: widget.workPackage.links.version,
+                project: widget.project,
+                onChanged: (Version version) {
+                  print(version.name);
+                },
+                resolveAllItems: () => VersionsApi().apiV3ProjectsProjectIdVersionsGet(widget.project.id),
+                itemWidget: (BuildContext context, Version version) {
+                  return Text(version.name);
+                },
+              ),
+              Text("Priority"),
             ],
           ),
         ),
