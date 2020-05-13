@@ -80,8 +80,8 @@ class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFo
         value: item,
       ));
     }
-    if (widget.defaultIndex != null && _currentItem != null)
-      _currentItem = items.embedded.elements[widget.defaultIndex];
+    if (widget.defaultIndex != null)
+      _currentItem ??= items.embedded.elements[widget.defaultIndex];
     return menuItems;
   }
 

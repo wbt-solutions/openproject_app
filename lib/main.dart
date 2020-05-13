@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:openproject_app/project_tree.dart';
 import 'package:openproject_app/utils.dart';
@@ -11,6 +13,7 @@ import 'package:openproject_dart_sdk/api.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
 final LocalAuthentication authentication = LocalAuthentication();
+final DateFormat _dateFormat = DateFormat.yMd();
 
 void main() => runApp(MyApp());
 
@@ -337,7 +340,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 },
                 resolveAllItems: () {
                   return ProjectsApi().apiV3ProjectsAvailableParentProjectsGet(
-                    of_: widget.project != null ? widget.project.identifier : null,
+                    of_: widget.project?.identifier,
                   );
                 },
               ),
@@ -345,7 +348,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
               MarkdownEditor(
                 autoFocus: false,
                 controller: _descriptionController,
-                value: widget.project != null ? widget.project.description.raw : null,
+                value: widget.project?.description?.raw,
                 tokenConfigs: [], // TODO
               ),
               Text("Identifier"),
@@ -386,7 +389,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
               MarkdownEditor(
                 autoFocus: false,
                 controller: _statusDescriptionController,
-                value: widget.project != null ? widget.project.statusExplanation.raw : null,
+                value: widget.project?.statusExplanation?.raw,
                 tokenConfigs: [], // TODO
               ),
               MaterialButton(
@@ -494,7 +497,16 @@ class _ProjectPageState extends State<ProjectPage> {
                 ),
                 IconButton(
                   icon: Icon(Icons.add),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (BuildContext context) => EditWorkPackagePage(
+                          project: widget.project,
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 IconButton(
                   icon: Icon(Icons.person),
@@ -560,7 +572,7 @@ class _ProjectPageState extends State<ProjectPage> {
                                 Text(workPackage.links.status.title),
                               ),
                               DataCell(
-                                Text(workPackage.links.assignee.title != null ? workPackage.links.assignee.title : "-"),
+                                Text(workPackage.links.assignee.title ?? "-"),
                               ),
                               DataCell(
                                 Text(workPackage.links.priority.title),
@@ -740,11 +752,40 @@ class EditWorkPackagePage extends StatefulWidget {
 }
 
 class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
+  Status _status;
+  WPType _wpType;
   TextEditingController _subjectController = TextEditingController();
+  MarkdownEditorController _descriptionController = MarkdownEditorController();
+  User _assignee;
+  User _accountable;
+  TextEditingController _estimatedTimeController = TextEditingController();
+  TextEditingController _remainingHoursController = TextEditingController();
+  TextEditingController _dateFromController = TextEditingController();
+  DateTime _from;
+  TextEditingController _dateToController = TextEditingController();
+  DateTime _to;
+  TextEditingController _progressController = TextEditingController();
+  Category _category;
+  Version _version;
+  Priority _priority;
 
   @override
   void initState() {
     super.initState();
+    if (widget.workPackage != null) {
+      _subjectController.text = widget.workPackage.subject;
+      _estimatedTimeController.text = widget.workPackage.estimatedTime;
+      // TODO _remainingHoursController.text =
+      if (widget.workPackage.startDate != null) {
+        _dateFromController.text = _dateFormat.format(widget.workPackage.startDate);
+        _from = widget.workPackage.startDate;
+      }
+      if (widget.workPackage.dueDate != null) {
+        _dateToController.text = _dateFormat.format(widget.workPackage.dueDate);
+        _to = widget.workPackage.dueDate;
+      }
+      _progressController.text = widget.workPackage.percentageDone?.toString();
+    }
   }
 
   @override
@@ -758,25 +799,25 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
         child: Form(
           child: ListView(
             children: <Widget>[
-              Text("Statuses"),
+              Text("Status"),
               CollectionDropDownFormField<Statuses, Status>(
-                currentItemLink: widget.workPackage.links.status,
+                currentItemLink: widget.workPackage?.links?.status,
                 project: widget.project,
                 onChanged: (Status status) {
-                  print(status.name);
+                  _status = status;
                 },
                 resolveAllItems: () => StatusesApi().apiV3StatusesGet(),
                 itemWidget: (BuildContext context, Status status) {
                   return Text(status.name);
                 },
-                defaultIndex: widget.project == null ? 0 : null,
+                defaultIndex: 0,
               ),
               Text("Type"),
               CollectionDropDownFormField<WPTypes, WPType>(
-                currentItemLink: widget.workPackage.links.type,
+                currentItemLink: widget.workPackage?.links?.type,
                 project: widget.project,
                 onChanged: (WPType type) {
-                  print(type.name);
+                  _wpType = type;
                 },
                 resolveAllItems: () => TypesApi().apiV3ProjectsProjectIdTypesGet(widget.project.id),
                 itemWidget: (BuildContext context, WPType type) {
@@ -785,22 +826,27 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                     style: TextStyle(color: HexColor.fromHex(type.color)),
                   );
                 },
-                defaultIndex: widget.project == null ? 0 : null,
+                defaultIndex: 0,
               ),
               Text("Subject"),
-              TextFormField(),
+              TextFormField(
+                controller: _subjectController,
+                maxLength: 255,
+              ),
               Text("Description"),
               MarkdownEditor(
+                controller: _descriptionController,
+                value: widget.workPackage?.description?.raw,
                 autoFocus: false,
                 tokenConfigs: [],
               ),
               Divider(),
               Text("Assignee"),
               CollectionDropDownFormField<Users, User>(
-                currentItemLink: widget.workPackage.links.assignee,
+                currentItemLink: widget.workPackage?.links?.assignee,
                 project: widget.project,
                 onChanged: (User user) {
-                  print(user.name);
+                  _assignee = user;
                 },
                 resolveAllItems: () =>
                     WorkPackagesApi().apiV3ProjectsProjectIdWorkPackagesAvailableAssigneesGet(widget.project.id),
@@ -810,10 +856,10 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               ),
               Text("Accountable"),
               CollectionDropDownFormField<Users, User>(
-                currentItemLink: widget.workPackage.links.responsible,
+                currentItemLink: widget.workPackage?.links?.responsible,
                 project: widget.project,
                 onChanged: (User user) {
-                  print(user.name);
+                  _accountable = user;
                 },
                 resolveAllItems: () =>
                     WorkPackagesApi().apiV3ProjectsProjectIdWorkPackagesAvailableResponsiblesGet(widget.project.id),
@@ -824,15 +870,18 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               Divider(),
               Text("Estimated time"),
               TextFormField(
+                controller: _estimatedTimeController,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
               Text("Remaining Hours"),
               TextFormField(
+                controller: _remainingHoursController,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
               Divider(),
               Text("Date"),
               TextFormField(
+                controller: _dateFromController,
                 onTap: () {
                   // TODO
                   showDatePicker(
@@ -840,11 +889,15 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                     initialDate: null,
                     firstDate: null,
                     lastDate: null,
-                  );
+                  ).then((DateTime value) {
+                    _dateFromController.text = _dateFormat.format(value);
+                    _from = value;
+                  });
                 },
               ),
               Text("-"),
               TextFormField(
+                controller: _dateToController,
                 onTap: () {
                   // TODO
                   showDatePicker(
@@ -852,17 +905,36 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                     initialDate: null,
                     firstDate: null,
                     lastDate: null,
-                  );
+                  ).then((DateTime value) {
+                    _dateToController.text = _dateFormat.format(value);
+                    _to = value;
+                  });
                 },
               ),
-              Text("Progess"),
-              TextFormField(),
+              Text("Progress"),
+              TextFormField(
+                controller: _progressController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  WhitelistingTextInputFormatter.digitsOnly,
+                ],
+                validator: (value) {
+                  int percent = int.tryParse(value);
+                  if (percent > 100) {
+                    return "Maximal 100%";
+                  } else if (percent < 0) {
+                    return "Minimum 0%";
+                  } else {
+                    return null;
+                  }
+                },
+              ),
               Text("Category"),
               CollectionDropDownFormField<Categories, Category>(
-                currentItemLink: widget.workPackage.links.category,
+                currentItemLink: widget.workPackage?.links?.category,
                 project: widget.project,
                 onChanged: (Category category) {
-                  print(category.name);
+                  _category = category;
                 },
                 resolveAllItems: () => CategoriesApi().apiV3ProjectsProjectIdCategoriesGet(widget.project.id),
                 itemWidget: (BuildContext context, Category category) {
@@ -871,10 +943,10 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               ),
               Text("Versions"),
               CollectionDropDownFormField<Versions, Version>(
-                currentItemLink: widget.workPackage.links.version,
+                currentItemLink: widget.workPackage?.links?.version,
                 project: widget.project,
                 onChanged: (Version version) {
-                  print(version.name);
+                  _version = version;
                 },
                 resolveAllItems: () => VersionsApi().apiV3ProjectsProjectIdVersionsGet(widget.project.id),
                 itemWidget: (BuildContext context, Version version) {
@@ -882,6 +954,52 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 },
               ),
               Text("Priority"),
+              CollectionDropDownFormField<Priorities, Priority>(
+                currentItemLink: widget.workPackage?.links?.priority,
+                project: widget.project,
+                onChanged: (Priority priority) {
+                  _priority = priority;
+                },
+                resolveAllItems: () => PrioritiesApi().apiV3PrioritiesGet(),
+                itemWidget: (BuildContext context, Priority priority) {
+                  return Text(priority.name);
+                },
+                defaultIndex: 1,
+              ),
+              MaterialButton(
+                child: Text(widget.workPackage == null ? "Erstellen" : "Speichern"),
+                onPressed: () {
+                  WorkPackage w = WorkPackage();
+                  w.links = WorkPackageLinks();
+
+                  w.links.status = Link()..href = _status.links.self.href;
+                  w.links.type = Link()..href = _wpType.links.self.href;
+
+                  w.subject = _subjectController.text;
+                  w.description = Description()..raw = _descriptionController.text;
+
+                  if (_assignee != null) w.links.assignee = Link()..href = _assignee.links.self.href;
+                  if (_accountable != null) w.links.responsible = Link()..href = _accountable.links.self.href;
+
+                  if (_estimatedTimeController.text.isNotEmpty)
+                    w.estimatedTime = _estimatedTimeController.text; // TODO Formatting?? Remaining hours??
+
+                  w.startDate = _from;
+                  w.dueDate = _to;
+                  w.percentageDone = int.tryParse(_progressController.text);
+
+                  if (_category != null) w.links.category = Link()..href = _category.links.self.href;
+                  if (_version != null) w.links.version = Link()..href = _version.links.self.href;
+                  if (_priority != null) w.links.priority = Link()..href = _priority.links.self.href;
+
+                  if (widget.workPackage != null) {
+                    w.lockVersion = widget.workPackage.lockVersion;
+                    WorkPackagesApi().apiV3WorkPackagesIdPatch(widget.workPackage.id, body: w);
+                  } else {
+                    WorkPackagesApi().apiV3ProjectsIdWorkPackagesPost(widget.project.id, w);
+                  }
+                },
+              )
             ],
           ),
         ),
