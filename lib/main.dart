@@ -883,12 +883,11 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               TextFormField(
                 controller: _dateFromController,
                 onTap: () {
-                  // TODO
                   showDatePicker(
                     context: context,
-                    initialDate: null,
-                    firstDate: null,
-                    lastDate: null,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime.now().subtract(Duration(days: 36500)),
+                    lastDate: DateTime.now().add(Duration(days: 36500)),
                   ).then((DateTime value) {
                     _dateFromController.text = _dateFormat.format(value);
                     _from = value;
@@ -899,12 +898,11 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               TextFormField(
                 controller: _dateToController,
                 onTap: () {
-                  // TODO
                   showDatePicker(
                     context: context,
-                    initialDate: null,
-                    firstDate: null,
-                    lastDate: null,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime.now().subtract(Duration(days: 36500)),
+                    lastDate: DateTime.now().add(Duration(days: 36500)),
                   ).then((DateTime value) {
                     _dateToController.text = _dateFormat.format(value);
                     _to = value;
