@@ -10,6 +10,7 @@ import 'package:openproject_app/project_tree.dart';
 import 'package:openproject_app/utils.dart';
 import 'package:openproject_app/widgets.dart';
 import 'package:openproject_dart_sdk/api.dart';
+import 'package:pattern_formatter/pattern_formatter.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
 final LocalAuthentication authentication = LocalAuthentication();
@@ -870,6 +871,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               Divider(),
               Text("Estimated time"),
               TextFormField(
+                inputFormatters: [
+                  WhitelistingTextInputFormatter.digitsOnly,
+                ],
                 controller: _estimatedTimeController,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
@@ -882,6 +886,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               Text("Date"),
               TextFormField(
                 controller: _dateFromController,
+                inputFormatters: [
+                  DateInputFormatter(),
+                ],
                 onTap: () {
                   showDatePicker(
                     context: context,
@@ -889,14 +896,19 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                     firstDate: DateTime.now().subtract(Duration(days: 36500)),
                     lastDate: DateTime.now().add(Duration(days: 36500)),
                   ).then((DateTime value) {
-                    _dateFromController.text = _dateFormat.format(value);
-                    _from = value;
+                    if (value != null) {
+                      _dateFromController.text = _dateFormat.format(value);
+                      _from = value;
+                    }
                   });
                 },
               ),
               Text("-"),
               TextFormField(
                 controller: _dateToController,
+                inputFormatters: [
+                  DateInputFormatter(),
+                ],
                 onTap: () {
                   showDatePicker(
                     context: context,
@@ -904,8 +916,10 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                     firstDate: DateTime.now().subtract(Duration(days: 36500)),
                     lastDate: DateTime.now().add(Duration(days: 36500)),
                   ).then((DateTime value) {
-                    _dateToController.text = _dateFormat.format(value);
-                    _to = value;
+                    if (value != null) {
+                      _dateToController.text = _dateFormat.format(value);
+                      _to = value;
+                    }
                   });
                 },
               ),

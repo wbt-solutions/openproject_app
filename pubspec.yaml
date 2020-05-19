@@ -19,6 +19,7 @@ dependencies:
   table_calendar: ^2.2.3
   file_picker: ^1.6.2
   intl: ^0.16.1
+  pattern_formatter: ^1.0.1
 
 dev_dependencies:
   flutter_test:
