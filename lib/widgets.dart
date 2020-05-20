@@ -46,6 +46,8 @@ class CollectionDropDownFormField<C, I> extends StatefulWidget {
   final ItemBuilder<I> itemWidget;
   final int defaultIndex;
 
+  final InputDecoration decoration;
+
   const CollectionDropDownFormField({
     Key key,
     this.currentItemLink,
@@ -54,6 +56,7 @@ class CollectionDropDownFormField<C, I> extends StatefulWidget {
     @required this.resolveAllItems,
     @required this.itemWidget,
     this.defaultIndex,
+    this.decoration,
   }) : super(key: key);
 
   @override
@@ -80,8 +83,7 @@ class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFo
         value: item,
       ));
     }
-    if (widget.defaultIndex != null)
-      _currentItem ??= items.embedded.elements[widget.defaultIndex];
+    if (widget.defaultIndex != null) _currentItem ??= items.embedded.elements[widget.defaultIndex];
     return menuItems;
   }
 
@@ -105,6 +107,7 @@ class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFo
             });
             widget.onChanged(item);
           },
+          decoration: widget.decoration,
         );
       },
     );
