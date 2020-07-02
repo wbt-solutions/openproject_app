@@ -1,4 +1,6 @@
+import 'package:autologin_plugin/autologin_plugin.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 import '../globals.dart';
@@ -39,11 +41,17 @@ class _LoginPageState extends State<LoginPage> {
             }
           });
         });
+      } else {
+        try {
+          AutologinPlugin.getLoginData().then((Credential credential) {
+            _login(credential.username, credential.password);
+          });
+        } on PlatformException {}
       }
     });
   }
 
-  Future<void> _login(String host, String apiKey) async {
+  Future<void> _login(String host, String apiKey, {bool save = false}) async {
     defaultApiClient.basePath = host;
     defaultApiClient.getAuthentication<HttpBasicAuth>('basicAuth').username = 'apikey';
     defaultApiClient.getAuthentication<HttpBasicAuth>('basicAuth').password = apiKey;
@@ -53,6 +61,11 @@ class _LoginPageState extends State<LoginPage> {
       Projects projects = await ProjectsApi().apiV3ProjectsGet();
       storage.write(key: "host", value: host);
       storage.write(key: "apikey", value: apiKey);
+      if (save) {
+        try {
+          await AutologinPlugin.saveLoginData(Credential.fromArgs(host, apiKey));
+        } on PlatformException {}
+      }
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -96,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text("Anmelden"),
                 onPressed: () {
                   if (_formKey.currentState.validate()) {
-                    _login(_hostController.text, _apiKeyController.text);
+                    _login(_hostController.text, _apiKeyController.text, save: true);
                   }
                 },
               ),

@@ -21,6 +21,8 @@ dependencies:
   intl: ^0.16.1
   pattern_formatter: ^1.0.1
   sentry: ">=3.0.0 <4.0.0"
+  autologin_plugin:
+    git: https://github.com/rekire/autologin_plugin.git
 
 dev_dependencies:
   flutter_test:
