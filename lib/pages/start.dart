@@ -67,10 +67,10 @@ class _StartPageState extends State<StartPage> {
     );
   }
 
-  Widget _buildPanel(User me, ProjectNode node) {
+  Widget _buildPanel(User me, ProjectNode node, {int depth = 0}) {
     if (node.children.length == 0) return Text("Keine Subprojekte vorhanden");
+    EdgeInsets leftPadding = EdgeInsets.only(left: 9.0 * (depth + 1));
     return ExpansionPanelList(
-      expandedHeaderPadding: EdgeInsets.only(left: 9),
       expansionCallback: (int index, bool isExpanded) {
         setState(() {
           node.children[index].isExpanded = !isExpanded;
@@ -80,10 +80,16 @@ class _StartPageState extends State<StartPage> {
         return ExpansionPanel(
           headerBuilder: (BuildContext context, bool isExpanded) {
             return ListTile(
-              title: Text(item.project.name),
-              subtitle: DescriptionWidget(
-                description: item.project.description,
-                maxLength: 25,
+              title: Padding(
+                padding: leftPadding,
+                child: Text(item.project.name),
+              ),
+              subtitle: Padding(
+                padding: leftPadding,
+                child: DescriptionWidget(
+                  description: item.project.description,
+                  maxLength: 25,
+                ),
               ),
               onTap: () {
                 Navigator.push(
@@ -98,7 +104,7 @@ class _StartPageState extends State<StartPage> {
               },
             );
           },
-          body: _buildPanel(me, item),
+          body: _buildPanel(me, item, depth: depth + 1),
           isExpanded: item.isExpanded,
         );
       }).toList(),
