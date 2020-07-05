@@ -42,11 +42,30 @@ class _LoginPageState extends State<LoginPage> {
           });
         });
       } else {
-        try {
-          AutologinPlugin.getLoginData().then((Credential credential) {
-            _login(credential.username, credential.password);
-          });
-        } on PlatformException {}
+        storage.read(key: "authenticateLocal").then((String value) {
+          if (value == "true") {
+            authentication
+                .authenticateWithBiometrics(
+              localizedReason: "Sie haben Authentication aktiviert",
+              sensitiveTransaction: true,
+            )
+                .then((bool value) {
+              if (value) {
+                try {
+                  AutologinPlugin.getLoginData().then((Credential credential) {
+                    _login(credential.username, credential.password);
+                  });
+                } on PlatformException {}
+              }
+            });
+          } else {
+            try {
+              AutologinPlugin.getLoginData().then((Credential credential) {
+                _login(credential.username, credential.password);
+              });
+            } on PlatformException {}
+          }
+        });
       }
     });
   }
