@@ -27,7 +27,7 @@ class DescriptionWidget extends StatelessWidget {
     if (maxLength != null && text.length > maxLength)
       text = text.replaceRange(math.min(maxLength, text.length), text.length, "...");
     switch (description.format) {
-      case "markdown":
+      case DescriptionFormatEnum.markdown_:
         return MarkdownBody(data: text);
       default:
         print(text);
