@@ -45,18 +45,25 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login(String host, String apiKey) async {
     defaultApiClient.basePath = host;
-    defaultApiClient.getAuthentication<HttpBasicAuth>('basicAuth').username = 'apikey';
-    defaultApiClient.getAuthentication<HttpBasicAuth>('basicAuth').password = apiKey;
+    defaultApiClient.getAuthentication<HttpBasicAuth>('basicAuth').username =
+        'apikey';
+    defaultApiClient.getAuthentication<HttpBasicAuth>('basicAuth').password =
+        apiKey;
 
     try {
-      User me = await UsersApi().apiV3UsersIdGet("me");
-      Projects projects = await ProjectsApi().apiV3ProjectsGet();
+      List<dynamic> userData = await Future.wait([
+        UsersApi().apiV3UsersIdGet("me"),
+        ProjectsApi().apiV3ProjectsGet(),
+      ]);
       storage.write(key: "host", value: host);
       storage.write(key: "apikey", value: apiKey);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (BuildContext context) => StartPage(me: me, projects: projects),
+          builder: (BuildContext context) => StartPage(
+            me: userData[0],
+            projects: userData[1],
+          ),
         ),
       );
     } catch (e) {
@@ -70,7 +77,8 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         title: Text("Anmelden"),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Form(
           key: _formKey,
           child: Column(
