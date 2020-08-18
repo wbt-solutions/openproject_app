@@ -18,7 +18,6 @@ extension HexColor on Color {
 }
 
 extension SerializableDuration on Duration {
-
   String toIso8601String() {
     String string = "P";
 
@@ -72,5 +71,44 @@ extension SerializableDuration on Duration {
     }
 
     return string;
+  }
+
+  static Duration parse(String duration) {
+    if (!RegExp(r"^P((\d+W)?(\d+D)?)(T(\d+H)?(\d+M)?(\d+(\.\d+)?S)?)?$")
+        .hasMatch(duration)) {
+      throw ArgumentError("String does not follow correct format");
+    }
+
+    final weeks = _parseTime(duration, "W");
+    final days = _parseTime(duration, "D");
+    final hours = _parseTime(duration, "H");
+    final minutes = _parseTime(duration, "M");
+    final seconds = _parseTime(duration, "S", hasDecimals: true);
+
+    return Duration(
+      days: days + (weeks * 7),
+      hours: hours,
+      minutes: minutes,
+      microseconds: seconds,
+    );
+  }
+
+  static int _parseTime(String duration, String timeUnit,
+      {bool hasDecimals: false}) {
+    final decimalTimeMatch = RegExp(r"\d+\.\d+" + timeUnit).firstMatch(duration);
+
+    if (hasDecimals && decimalTimeMatch != null) {
+      final timeString = decimalTimeMatch.group(0);
+      double decimals =
+          double.parse(timeString.substring(0, timeString.length - 1));
+      return (decimals * Duration.microsecondsPerSecond).round();
+    } else {
+      final timeMatch = RegExp(r"\d+" + timeUnit).firstMatch(duration);
+
+      if (timeMatch == null) return 0;
+      final timeString = timeMatch.group(0);
+      return int.parse(timeString.substring(0, timeString.length - 1)) *
+          (hasDecimals ? Duration.microsecondsPerSecond : 1);
+    }
   }
 }
