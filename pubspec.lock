@@ -105,7 +105,7 @@ packages:
       name: file_picker
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.13.2"
+    version: "1.13.3"
   file_picker_platform_interface:
     dependency: transitive
     description:
@@ -197,14 +197,14 @@ packages:
       name: local_auth
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.2+3"
+    version: "0.6.3"
   markdown:
     dependency: transitive
     description:
       name: markdown
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.7"
+    version: "2.1.8"
   matcher:
     dependency: transitive
     description:
@@ -224,7 +224,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "8e6605a45c72446bf52508dc174542174f4af78c"
+      resolved-ref: "31cea127473ab82958ce56547f86329714bd1086"
       url: "https://github.com/wbt-solutions/openproject_dart_sdk.git"
     source: git
     version: "0.2.1"
@@ -262,7 +262,7 @@ packages:
       name: path_provider_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.3"
   pattern_formatter:
     dependency: "direct main"
     description:
@@ -456,7 +456,7 @@ packages:
       name: url_launcher_web
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.2"
+    version: "0.1.2+1"
   usage:
     dependency: transitive
     description:

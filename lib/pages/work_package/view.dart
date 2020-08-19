@@ -53,7 +53,7 @@ class ViewWorkPackagePage extends StatelessWidget {
                 WorkPackagesApi()
                     .apiV3WorkPackagesIdPatch(
                   workPackage.id,
-                  body: WorkPackage()
+                  workPackage: WorkPackage()
                     ..lockVersion = workPackage.lockVersion
                     ..links = WorkPackageLinks()
                     ..links.assignee = Link()
@@ -92,7 +92,7 @@ class ViewWorkPackagePage extends StatelessWidget {
                                 WorkPackagesApi()
                                     .apiV3WorkPackagesIdPatch(
                                   workPackage.id,
-                                  body: WorkPackage()
+                                  workPackage: WorkPackage()
                                     ..lockVersion = workPackage.lockVersion
                                     ..links = WorkPackageLinks()
                                     ..links.status = Link()

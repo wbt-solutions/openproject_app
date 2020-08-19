@@ -25,7 +25,7 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
   MarkdownEditorController _descriptionController = MarkdownEditorController();
   User _assignee;
   User _accountable;
-  TextEditingController _estimatedTimeController = TextEditingController();
+  Duration _estimatedTime;
   TextEditingController _remainingHoursController = TextEditingController();
   TextEditingController _dateFromController = TextEditingController();
   DateTime _from;
@@ -41,7 +41,10 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
     super.initState();
     if (widget.workPackage != null) {
       _subjectController.text = widget.workPackage.subject;
-      _estimatedTimeController.text = widget.workPackage.estimatedTime;
+      if (widget.workPackage.estimatedTime != null) {
+        _estimatedTime =
+            SerializableDuration.parse(widget.workPackage.estimatedTime);
+      }
       // TODO _remainingHoursController.text =
       if (widget.workPackage.startDate != null) {
         _dateFromController.text = dateFormat.format(widget.workPackage.startDate);
@@ -135,12 +138,15 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
             ),
             Divider(),
             TextFormField(
-              controller: _estimatedTimeController,
+              initialValue: _estimatedTime?.inHours?.toString(),
               decoration: InputDecoration(labelText: "Estimated time"),
               inputFormatters: [
                 WhitelistingTextInputFormatter.digitsOnly,
               ],
               keyboardType: TextInputType.numberWithOptions(decimal: true),
+              onChanged: (value) {
+                //_estimatedTime = SerializableDuration.
+              },
             ),
             TextFormField(
               controller: _remainingHoursController,
@@ -258,8 +264,8 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 if (_assignee != null) w.links.assignee = Link()..href = _assignee.links.self.href;
                 if (_accountable != null) w.links.responsible = Link()..href = _accountable.links.self.href;
 
-                if (_estimatedTimeController.text.isNotEmpty)
-                  w.estimatedTime = _estimatedTimeController.text; // TODO Formatting?? Remaining hours??
+                if (_estimatedTime != null)
+                  w.estimatedTime = _estimatedTime.toIso8601String();
 
                 w.startDate = _from;
                 w.dueDate = _to;
@@ -271,7 +277,7 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
 
                 if (widget.workPackage != null) {
                   w.lockVersion = widget.workPackage.lockVersion;
-                  WorkPackagesApi().apiV3WorkPackagesIdPatch(widget.workPackage.id, body: w);
+                  WorkPackagesApi().apiV3WorkPackagesIdPatch(widget.workPackage.id, workPackage: w);
                 } else {
                   WorkPackagesApi().apiV3ProjectsIdWorkPackagesPost(widget.project.id, w);
                 }
