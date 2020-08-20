@@ -18,6 +18,8 @@ extension HexColor on Color {
 }
 
 extension SerializableDuration on Duration {
+  double get inHoursDecimal => inMicroseconds / Duration.microsecondsPerHour;
+
   String toIso8601String() {
     String string = "P";
 
