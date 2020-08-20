@@ -128,8 +128,8 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (User user) {
                 _assignee = user;
               },
-              resolveAllItems: () => WorkPackagesApi()
-                  .apiV3ProjectsProjectIdWorkPackagesAvailableAssigneesGet(
+              resolveAllItems: () =>
+                  WorkPackagesApi().apiV3ProjectsProjectIdAvailableAssigneesGet(
                 widget.project.id,
               ),
               itemWidget: (BuildContext context, User user) {
@@ -144,7 +144,7 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 _accountable = user;
               },
               resolveAllItems: () => WorkPackagesApi()
-                  .apiV3ProjectsProjectIdWorkPackagesAvailableResponsiblesGet(
+                  .apiV3ProjectsProjectIdAvailableResponsiblesGet(
                 widget.project.id,
               ),
               itemWidget: (BuildContext context, User user) {
