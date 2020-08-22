@@ -9,8 +9,12 @@ class ViewWorkPackagePage extends StatelessWidget {
   final Project project;
   final WorkPackage workPackage;
 
-  const ViewWorkPackagePage({Key key, @required this.workPackage, @required this.me, @required this.project})
-      : super(key: key);
+  const ViewWorkPackagePage({
+    Key key,
+    @required this.workPackage,
+    @required this.me,
+    @required this.project,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +44,9 @@ class ViewWorkPackagePage extends StatelessWidget {
               leading: Icon(Icons.delete),
               title: Text("Löschen"),
               onTap: () {
-                WorkPackagesApi().apiV3WorkPackagesIdDelete(workPackage.id).then((value) {
+                WorkPackagesApi()
+                    .apiV3WorkPackagesIdDelete(workPackage.id)
+                    .then((value) {
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 });
@@ -96,7 +102,8 @@ class ViewWorkPackagePage extends StatelessWidget {
                                     ..lockVersion = workPackage.lockVersion
                                     ..links = WorkPackageLinks()
                                     ..links.status = Link()
-                                    ..links.status.href = status.links.self.href,
+                                    ..links.status.href =
+                                        status.links.self.href,
                                 )
                                     .then((WorkPackage workPackage) {
                                   Navigator.of(context).pop();
@@ -117,6 +124,20 @@ class ViewWorkPackagePage extends StatelessWidget {
                 });
               },
             ),
+            ListTile(
+              title: Text("Zeit buchen"),
+              onTap: () {
+                /* TODO TimeEntriesApi().apiV3TimeEntriesPost(
+                  TimeEntry(
+                    links: TimeEntryLinks(
+                      project: project.links.self,
+                      user: me.links.self,
+                      workPackage: workPackage.links.self,
+                    ),
+                  ),
+                ); */
+              },
+            )
           ],
         ),
       ),

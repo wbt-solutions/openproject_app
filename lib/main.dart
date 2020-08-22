@@ -5,8 +5,10 @@ import 'package:sentry/sentry.dart';
 
 import 'pages/login.dart';
 
-final SentryClient sentry =
-    SentryClient(dsn: 'https://e2f963e6ae3b4f85a21ff9c2f7f54a2d@o406434.ingest.sentry.io/5283998');
+final SentryClient sentry = SentryClient(
+  dsn:
+      'https://e2f963e6ae3b4f85a21ff9c2f7f54a2d@o406434.ingest.sentry.io/5283998',
+);
 
 void main() {
   FlutterError.onError = (details, {bool forceReport = false}) {
@@ -46,6 +48,9 @@ class OpenProjectApp extends StatelessWidget {
     return MaterialApp(
       title: 'OpenProject App',
       home: LoginPage(),
+      theme: ThemeData(
+        primaryColor: Color.fromRGBO(26, 103, 163, 1),
+      ),
     );
   }
 }
