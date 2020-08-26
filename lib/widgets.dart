@@ -76,7 +76,6 @@ class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFo
           widget.currentItemLink.href != null &&
           item.links.self.href == widget.currentItemLink.href) {
         _currentItem = item;
-        widget.onChanged(item);
       }
       menuItems.add(DropdownMenuItem<I>(
         child: widget.itemWidget(context, item),
@@ -84,6 +83,7 @@ class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFo
       ));
     }
     if (widget.defaultIndex != null) _currentItem ??= items.embedded.elements[widget.defaultIndex];
+    widget.onChanged(_currentItem);
     return menuItems;
   }
 

@@ -133,7 +133,9 @@ class ViewWorkPackagePage extends StatelessWidget {
                       project: project.links.self,
                       user: me.links.self,
                       workPackage: workPackage.links.self,
+                      activity: Link(href: "/api/v3/time_entries/activities/3"),
                     ),
+                    hours: 'PT5H',
                   ),
                 ); */
               },
