@@ -1,3 +1,4 @@
+import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:flutter/material.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
@@ -127,17 +128,63 @@ class ViewWorkPackagePage extends StatelessWidget {
             ListTile(
               title: Text("Zeit buchen"),
               onTap: () {
-                /* TODO TimeEntriesApi().apiV3TimeEntriesPost(
-                  TimeEntry(
-                    links: TimeEntryLinks(
-                      project: project.links.self,
-                      user: me.links.self,
-                      workPackage: workPackage.links.self,
-                      activity: Link(href: "/api/v3/time_entries/activities/3"),
-                    ),
-                    hours: 'PT5H',
-                  ),
-                ); */
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      content: Column(
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(
+                              labelText: "Date",
+                            ),
+                          ),
+                          TextField(
+                            decoration: InputDecoration(
+                              labelText: "Hours",
+                            ),
+                          ),
+                          DropdownButton(
+                            items: [],
+                            onChanged: (item) {},
+                          ),
+                          MarkdownEditor(
+                            decoration: InputDecoration(
+                              labelText: "Comment",
+                            ),
+                            tokenConfigs: [],
+                          )
+                        ],
+                      ),
+                      actions: [
+                        FlatButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("Cancel"),
+                        ),
+                        FlatButton(
+                          onPressed: () {
+                            TimeEntriesApi().apiV3TimeEntriesPost(
+                              TimeEntry(
+                                links: TimeEntryLinks(
+                                  project: project.links.self,
+                                  workPackage: workPackage.links.self,
+                                  activity: Link(
+                                    href: "/api/v3/time_entries/activities/3",
+                                  ),
+                                ),
+                                hours: 'PT5H',
+                                spentOn: DateTime.now(),
+                              ),
+                            );
+                          },
+                          child: Text("Create"),
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
             )
           ],

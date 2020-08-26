@@ -49,6 +49,7 @@ class _LoginPageState extends State<LoginPage> {
         'apikey';
     defaultApiClient.getAuthentication<HttpBasicAuth>('basicAuth').password =
         apiKey;
+    defaultApiClient.addDefaultHeader("Accept-Encoding", "gzip");
 
     try {
       List<dynamic> userData = await Future.wait([
