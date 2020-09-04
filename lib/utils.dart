@@ -97,7 +97,8 @@ extension SerializableDuration on Duration {
 
   static int _parseTime(String duration, String timeUnit,
       {bool hasDecimals: false}) {
-    final decimalTimeMatch = RegExp(r"\d+\.\d+" + timeUnit).firstMatch(duration);
+    final decimalTimeMatch =
+        RegExp(r"\d+\.\d+" + timeUnit).firstMatch(duration);
 
     if (hasDecimals && decimalTimeMatch != null) {
       final timeString = decimalTimeMatch.group(0);
@@ -112,5 +113,11 @@ extension SerializableDuration on Duration {
       return int.parse(timeString.substring(0, timeString.length - 1)) *
           (hasDecimals ? Duration.microsecondsPerSecond : 1);
     }
+  }
+
+  static Duration fromHours(double hours) {
+    return Duration(
+      microseconds: (hours * Duration.microsecondsPerHour).round(),
+    );
   }
 }

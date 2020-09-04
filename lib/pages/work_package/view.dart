@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:flutter/material.dart';
+import 'package:openproject_app/utils.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 import '../../widgets.dart';
@@ -131,57 +134,9 @@ class ViewWorkPackagePage extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (context) {
-                    return AlertDialog(
-                      content: Column(
-                        children: [
-                          TextField(
-                            decoration: InputDecoration(
-                              labelText: "Date",
-                            ),
-                          ),
-                          TextField(
-                            decoration: InputDecoration(
-                              labelText: "Hours",
-                            ),
-                          ),
-                          DropdownButton(
-                            items: [],
-                            onChanged: (item) {},
-                          ),
-                          MarkdownEditor(
-                            decoration: InputDecoration(
-                              labelText: "Comment",
-                            ),
-                            tokenConfigs: [],
-                          )
-                        ],
-                      ),
-                      actions: [
-                        FlatButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("Cancel"),
-                        ),
-                        FlatButton(
-                          onPressed: () {
-                            TimeEntriesApi().apiV3TimeEntriesPost(
-                              TimeEntry(
-                                links: TimeEntryLinks(
-                                  project: project.links.self,
-                                  workPackage: workPackage.links.self,
-                                  activity: Link(
-                                    href: "/api/v3/time_entries/activities/3",
-                                  ),
-                                ),
-                                hours: 'PT5H',
-                                spentOn: DateTime.now(),
-                              ),
-                            );
-                          },
-                          child: Text("Create"),
-                        ),
-                      ],
+                    return TimeEntryBookingDialog(
+                      project: project,
+                      workPackage: workPackage,
                     );
                   },
                 );
@@ -207,6 +162,130 @@ class ViewWorkPackagePage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class TimeEntryBookingDialog extends StatefulWidget {
+  final Project project;
+  final WorkPackage workPackage;
+
+  const TimeEntryBookingDialog({
+    Key key,
+    @required this.project,
+    @required this.workPackage,
+  }) : super(key: key);
+
+  @override
+  _TimeEntryBookingDialogState createState() => _TimeEntryBookingDialogState();
+}
+
+class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
+  TextEditingController _dateController = TextEditingController();
+  TextEditingController _hoursController = TextEditingController();
+  List<DropdownMenuItem<TimeEntriesActivity>> _timeEntriesActivitiesDropdown =
+      [];
+  TimeEntriesActivity _currentTimeEntriesActivity;
+
+  @override
+  void initState() {
+    super.initState();
+    defaultApiClient
+        .invokeAPI(
+      "/api/v3/time_entries/form",
+      'POST',
+      [],
+      TimeEntry(
+        spentOn: DateTime.now(),
+        links: TimeEntryLinks(
+          workPackage: widget.workPackage.links.self,
+        ),
+      ),
+      {},
+      {},
+      "application/json",
+      ["basicAuth"],
+    )
+        .then((value) {
+      List<TimeEntriesActivity> timeEntriesActivities =
+          TimeEntriesActivity.listFromJson(jsonDecode(value.body)["_embedded"]
+              ["schema"]["activity"]["_embedded"]["allowedValues"]);
+      _currentTimeEntriesActivity = timeEntriesActivities[0];
+      _timeEntriesActivitiesDropdown = timeEntriesActivities
+          .map((e) => DropdownMenuItem(
+                child: Text(e.name),
+                value: e,
+              ))
+          .toList();
+      setState(() {});
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      content: Form(
+        child: Container(
+          width: double.maxFinite,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _dateController,
+                decoration: InputDecoration(
+                  labelText: "Date",
+                ),
+              ),
+              TextFormField(
+                controller: _hoursController,
+                decoration: InputDecoration(
+                  labelText: "Hours",
+                ),
+              ),
+              DropdownButtonFormField(
+                items: _timeEntriesActivitiesDropdown,
+                value: _currentTimeEntriesActivity,
+                onChanged: (item) {},
+              ),
+              MarkdownEditor(
+                decoration: InputDecoration(
+                  labelText: "Comment",
+                ),
+                tokenConfigs: [],
+              )
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        FlatButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text("Cancel"),
+        ),
+        FlatButton(
+          onPressed: () {
+            TimeEntriesApi().apiV3TimeEntriesPost(
+              TimeEntry(
+                links: TimeEntryLinks(
+                  project: widget.project.links.self,
+                  workPackage: widget.workPackage.links.self,
+                  activity: Link(
+                    href: "/api/v3/time_entries/activities/3",
+                  ),
+                ),
+                hours: SerializableDuration.fromHours(
+                  double.parse(
+                    _hoursController.text,
+                  ),
+                ).toIso8601String(),
+                spentOn: DateTime.now(),
+              ),
+            );
+          },
+          child: Text("Create"),
+        ),
+      ],
     );
   }
 }

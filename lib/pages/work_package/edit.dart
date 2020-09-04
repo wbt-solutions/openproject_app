@@ -161,10 +161,8 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               ],
               keyboardType: TextInputType.numberWithOptions(decimal: true),
               onChanged: (value) {
-                _estimatedTime = Duration(
-                  microseconds:
-                      (double.parse(value) * Duration.microsecondsPerHour)
-                          .round(),
+                _estimatedTime = SerializableDuration.fromHours(
+                  double.parse(value),
                 );
               },
             ),
