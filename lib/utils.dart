@@ -1,4 +1,9 @@
+import 'dart:convert';
 import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:openproject_app/main.dart';
+import 'package:openproject_dart_sdk/api.dart';
 
 extension HexColor on Color {
   /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
@@ -98,12 +103,12 @@ extension SerializableDuration on Duration {
   static int _parseTime(String duration, String timeUnit,
       {bool hasDecimals: false}) {
     final decimalTimeMatch =
-        RegExp(r"\d+\.\d+" + timeUnit).firstMatch(duration);
+    RegExp(r"\d+\.\d+" + timeUnit).firstMatch(duration);
 
     if (hasDecimals && decimalTimeMatch != null) {
       final timeString = decimalTimeMatch.group(0);
       double decimals =
-          double.parse(timeString.substring(0, timeString.length - 1));
+      double.parse(timeString.substring(0, timeString.length - 1));
       return (decimals * Duration.microsecondsPerSecond).round();
     } else {
       final timeMatch = RegExp(r"\d+" + timeUnit).firstMatch(duration);
@@ -119,5 +124,34 @@ extension SerializableDuration on Duration {
     return Duration(
       microseconds: (hours * Duration.microsecondsPerHour).round(),
     );
+  }
+}
+
+void apiErrorHandler(error, BuildContext context) {
+  if (error is ApiException) {
+    Map<String, dynamic> openProjectError = jsonDecode(error.message);
+    showDialog(context: context, builder: (context) {
+      return AlertDialog(
+        title: Text("${openProjectError["_type"]}: ${openProjectError["errorIdentifier"]}"),
+        content: Text(openProjectError["message"]),
+        actions: [
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("OK"),
+          ),
+          FlatButton(
+            onPressed: () {
+              sentry.captureException(exception: error);
+              Navigator.of(context).pop();
+            },
+            child: Text("Report error"),
+          ),
+        ],
+      );
+    },);
+  } else {
+    throw error;
   }
 }

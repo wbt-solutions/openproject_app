@@ -251,6 +251,7 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
               ),
               MarkdownEditor(
                 controller: _commentController,
+                autoFocus: false,
                 decoration: InputDecoration(
                   labelText: "Comment",
                 ),
@@ -284,7 +285,9 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
                 comment: Description(raw: _commentController.text),
                 spentOn: _spentDate,
               ),
-            );
+            ).then((value) {
+              Navigator.of(context).pop();
+            }, onError: (e) => apiErrorHandler(e, context));
           },
           child: Text("Create"),
         ),
