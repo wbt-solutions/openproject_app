@@ -1,10 +1,11 @@
 import 'dart:math' as math;
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:openproject_app/globals.dart';
 import 'package:openproject_dart_sdk/api.dart';
+import 'package:pattern_formatter/pattern_formatter.dart';
 
 class DescriptionWidget extends StatelessWidget {
   final Description description;
@@ -25,7 +26,8 @@ class DescriptionWidget extends StatelessWidget {
         height: 0,
       );
     if (maxLength != null && text.length > maxLength)
-      text = text.replaceRange(math.min(maxLength, text.length), text.length, "...");
+      text = text.replaceRange(
+          math.min(maxLength, text.length), text.length, "...");
     switch (description.format) {
       case DescriptionFormatEnum.markdown_:
         return MarkdownBody(data: text);
@@ -60,10 +62,12 @@ class CollectionDropDownFormField<C, I> extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _CollectionDropDownFormFieldState<C, I> createState() => _CollectionDropDownFormFieldState<C, I>();
+  _CollectionDropDownFormFieldState<C, I> createState() =>
+      _CollectionDropDownFormFieldState<C, I>();
 }
 
-class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFormField<C, I>> {
+class _CollectionDropDownFormFieldState<C, I>
+    extends State<CollectionDropDownFormField<C, I>> {
   Future<List<DropdownMenuItem<I>>> _menuItems;
   I _currentItem;
 
@@ -82,7 +86,8 @@ class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFo
         value: item,
       ));
     }
-    if (widget.defaultIndex != null) _currentItem ??= items.embedded.elements[widget.defaultIndex];
+    if (widget.defaultIndex != null)
+      _currentItem ??= items.embedded.elements[widget.defaultIndex];
     widget.onChanged(_currentItem);
     return menuItems;
   }
@@ -97,7 +102,8 @@ class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFo
   Widget build(BuildContext context) {
     return FutureBuilder<List<DropdownMenuItem<I>>>(
       future: _menuItems,
-      builder: (BuildContext context, AsyncSnapshot<List<DropdownMenuItem<I>>> snapshot) {
+      builder: (BuildContext context,
+          AsyncSnapshot<List<DropdownMenuItem<I>>> snapshot) {
         return DropdownButtonFormField(
           items: snapshot.data,
           value: _currentItem,
@@ -110,6 +116,75 @@ class _CollectionDropDownFormFieldState<C, I> extends State<CollectionDropDownFo
           decoration: widget.decoration,
         );
       },
+    );
+  }
+}
+
+class DateTextFormField extends StatefulWidget {
+  final DateTime initialDate;
+  final DateTime firstDate;
+  final DateTime lastDate;
+  final void Function(DateTime date) onDateChange;
+
+  const DateTextFormField({
+    Key key,
+    this.initialDate,
+    @required this.firstDate,
+    @required this.lastDate,
+    this.onDateChange,
+  }) : super(key: key);
+
+  @override
+  _DateTextFormFieldState createState() => _DateTextFormFieldState();
+}
+
+class _DateTextFormFieldState extends State<DateTextFormField> {
+  TextEditingController _dateInputController = TextEditingController();
+  DateTime _currentDate;
+
+  @override
+  void initState() {
+    super.initState();
+    currentDate = widget.initialDate;
+  }
+
+  set currentDate(DateTime date) {
+    _currentDate = date;
+    if (date != null)
+      _dateInputController.text = dateFormat.format(date);
+    else
+      _dateInputController.text = "";
+    if (widget.onDateChange != null) widget.onDateChange(date);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            controller: _dateInputController,
+            inputFormatters: [
+              DateInputFormatter(),
+            ],
+          ),
+        ),
+        IconButton(
+          icon: Icon(Icons.calendar_today),
+          onPressed: () {
+            showDatePicker(
+              context: context,
+              initialDate: _currentDate ?? DateTime.now(),
+              firstDate: widget.firstDate,
+              lastDate: widget.lastDate,
+            ).then((DateTime value) {
+              setState(() {
+                currentDate = value;
+              });
+            });
+          },
+        ),
+      ],
     );
   }
 }

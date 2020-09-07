@@ -181,11 +181,12 @@ class TimeEntryBookingDialog extends StatefulWidget {
 }
 
 class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
-  TextEditingController _dateController = TextEditingController();
   TextEditingController _hoursController = TextEditingController();
   List<DropdownMenuItem<TimeEntriesActivity>> _timeEntriesActivitiesDropdown =
       [];
   TimeEntriesActivity _currentTimeEntriesActivity;
+  MarkdownEditorController _commentController = MarkdownEditorController();
+  DateTime _spentDate;
 
   @override
   void initState() {
@@ -228,12 +229,14 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
         child: Container(
           width: double.maxFinite,
           child: ListView(
+            shrinkWrap: true,
             children: [
-              TextFormField(
-                controller: _dateController,
-                decoration: InputDecoration(
-                  labelText: "Date",
-                ),
+              Text("Zeit buchen"),
+              DateTextFormField(
+                initialDate: DateTime.now(),
+                firstDate: widget.project.createdAt,
+                lastDate: widget.project.createdAt.add(Duration(days: 3650)),
+                onDateChange: (date) => _spentDate = date,
               ),
               TextFormField(
                 controller: _hoursController,
@@ -247,6 +250,7 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
                 onChanged: (item) {},
               ),
               MarkdownEditor(
+                controller: _commentController,
                 decoration: InputDecoration(
                   labelText: "Comment",
                 ),
@@ -270,16 +274,15 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
                 links: TimeEntryLinks(
                   project: widget.project.links.self,
                   workPackage: widget.workPackage.links.self,
-                  activity: Link(
-                    href: "/api/v3/time_entries/activities/3",
-                  ),
+                  activity: _currentTimeEntriesActivity.links.self,
                 ),
                 hours: SerializableDuration.fromHours(
                   double.parse(
                     _hoursController.text,
                   ),
                 ).toIso8601String(),
-                spentOn: DateTime.now(),
+                comment: Description(raw: _commentController.text),
+                spentOn: _spentDate,
               ),
             );
           },

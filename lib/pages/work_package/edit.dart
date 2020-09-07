@@ -31,9 +31,7 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
   User _accountable;
   Duration _estimatedTime;
   TextEditingController _remainingHoursController = TextEditingController();
-  TextEditingController _dateFromController = TextEditingController();
   DateTime _from;
-  TextEditingController _dateToController = TextEditingController();
   DateTime _to;
   TextEditingController _progressController = TextEditingController();
   Category _category;
@@ -51,13 +49,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
       }
       // TODO _remainingHoursController.text =
       if (widget.workPackage.startDate != null) {
-        _dateFromController.text = dateFormat.format(
-          widget.workPackage.startDate,
-        );
         _from = widget.workPackage.startDate;
       }
       if (widget.workPackage.dueDate != null) {
-        _dateToController.text = dateFormat.format(widget.workPackage.dueDate);
         _to = widget.workPackage.dueDate;
       }
       _progressController.text = widget.workPackage.percentageDone?.toString();
@@ -173,51 +167,25 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
             ),
             Divider(),
             Text("Date"),
-            TextFormField(
-              controller: _dateFromController,
-              inputFormatters: [
-                DateInputFormatter(),
-              ],
-              onTap: () {
-                showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now().subtract(Duration(days: 36500)),
-                  lastDate: DateTime.now().add(Duration(days: 36500)),
-                ).then((DateTime value) {
-                  if (value != null) {
-                    _dateFromController.text = dateFormat.format(value);
-                    _from = value;
-                  }
-                });
-              },
+            DateTextFormField(
+              initialDate: _from,
+              firstDate: DateTime.now().subtract(Duration(days: 36500)),
+              lastDate: DateTime.now().add(Duration(days: 36500)),
+              onDateChange: (date) => _from = date,
             ),
             Text("-"),
-            TextFormField(
-              controller: _dateToController,
-              inputFormatters: [
-                DateInputFormatter(),
-              ],
-              onTap: () {
-                showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now().subtract(Duration(days: 36500)),
-                  lastDate: DateTime.now().add(Duration(days: 36500)),
-                ).then((DateTime value) {
-                  if (value != null) {
-                    _dateToController.text = dateFormat.format(value);
-                    _to = value;
-                  }
-                });
-              },
+            DateTextFormField(
+              initialDate: _to,
+              firstDate: DateTime.now().subtract(Duration(days: 36500)),
+              lastDate: DateTime.now().add(Duration(days: 36500)),
+              onDateChange: (date) => _to = date,
             ),
             TextFormField(
               controller: _progressController,
               decoration: InputDecoration(labelText: "Progress"),
               keyboardType: TextInputType.number,
               inputFormatters: [
-                WhitelistingTextInputFormatter.digitsOnly,
+                FilteringTextInputFormatter.digitsOnly
               ],
               validator: (value) {
                 int percent = int.tryParse(value);

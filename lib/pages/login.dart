@@ -15,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _hostController = TextEditingController();
   TextEditingController _apiKeyController = TextEditingController();
+  bool isLoggingIn = false;
 
   @override
   void initState() {
@@ -44,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _login(String host, String apiKey) async {
+    isLoggingIn = true;
     defaultApiClient.basePath = host;
     defaultApiClient.getAuthentication<HttpBasicAuth>('basicAuth').username =
         'apikey';
@@ -58,6 +60,7 @@ class _LoginPageState extends State<LoginPage> {
       ]);
       storage.write(key: "host", value: host);
       storage.write(key: "apikey", value: apiKey);
+      isLoggingIn = false;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -68,6 +71,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     } catch (e) {
+      isLoggingIn = false;
       print("Exception when calling ActivitiesApi->apiV3ActivitiesIdGet: $e\n");
     }
   }
@@ -101,14 +105,19 @@ class _LoginPageState extends State<LoginPage> {
                 controller: _apiKeyController,
                 autocorrect: false,
               ),
-              MaterialButton(
-                child: Text("Anmelden"),
-                onPressed: () {
-                  if (_formKey.currentState.validate()) {
-                    _login(_hostController.text, _apiKeyController.text);
-                  }
-                },
-              ),
+              isLoggingIn
+                  ? Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(),
+                    )
+                  : MaterialButton(
+                      child: Text("Anmelden"),
+                      onPressed: () {
+                        if (_formKey.currentState.validate()) {
+                          _login(_hostController.text, _apiKeyController.text);
+                        }
+                      },
+                    ),
             ],
           ),
         ),
