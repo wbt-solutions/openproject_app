@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:flutter/material.dart';
-import 'package:openproject_app/utils.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
+import '../../utils.dart';
 import '../../widgets.dart';
 import 'edit.dart';
 
@@ -33,6 +33,7 @@ class ViewWorkPackagePage extends StatelessWidget {
               leading: Icon(Icons.edit),
               title: Text("Bearbeiten"),
               onTap: () {
+                Navigator.of(context).pop();
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -48,10 +49,10 @@ class ViewWorkPackagePage extends StatelessWidget {
               leading: Icon(Icons.delete),
               title: Text("Löschen"),
               onTap: () {
+                Navigator.of(context).pop();
                 WorkPackagesApi()
                     .apiV3WorkPackagesIdDelete(workPackage.id)
                     .then((value) {
-                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 });
               },
@@ -60,6 +61,7 @@ class ViewWorkPackagePage extends StatelessWidget {
               leading: Icon(Icons.person),
               title: Text("Mir zuweisen"),
               onTap: () {
+                Navigator.of(context).pop();
                 WorkPackagesApi()
                     .apiV3WorkPackagesIdPatch(
                   workPackage.id,
@@ -69,9 +71,7 @@ class ViewWorkPackagePage extends StatelessWidget {
                     ..links.assignee = Link()
                     ..links.assignee.href = me.links.self.href,
                 )
-                    .then((WorkPackage workPackage) {
-                  Navigator.of(context).pop();
-                }).catchError((Object error) {
+                    .catchError((Object error) {
                   if (error is ApiException) {
                     print(error.message);
                   } else {
@@ -88,6 +88,7 @@ class ViewWorkPackagePage extends StatelessWidget {
               leading: Icon(Icons.business_center),
               title: Text("Status setzen"),
               onTap: () {
+                Navigator.of(context).pop();
                 StatusesApi().apiV3StatusesGet().then((Statuses statuses) {
                   showDialog(
                     context: context,
@@ -111,7 +112,6 @@ class ViewWorkPackagePage extends StatelessWidget {
                                 )
                                     .then((WorkPackage workPackage) {
                                   Navigator.of(context).pop();
-                                  Navigator.of(context).pop();
                                 }).catchError((Object error) {
                                   if (error is ApiException) {
                                     print(error.message);
@@ -131,6 +131,7 @@ class ViewWorkPackagePage extends StatelessWidget {
             ListTile(
               title: Text("Zeit buchen"),
               onTap: () {
+                Navigator.of(context).pop();
                 showDialog(
                   context: context,
                   builder: (context) {
@@ -243,6 +244,7 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
                 decoration: InputDecoration(
                   labelText: "Hours",
                 ),
+                keyboardType: TextInputType.datetime,
               ),
               DropdownButtonFormField(
                 items: _timeEntriesActivitiesDropdown,
@@ -270,7 +272,8 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
         ),
         FlatButton(
           onPressed: () {
-            TimeEntriesApi().apiV3TimeEntriesPost(
+            TimeEntriesApi()
+                .apiV3TimeEntriesPost(
               TimeEntry(
                 links: TimeEntryLinks(
                   project: widget.project.links.self,
@@ -285,7 +288,8 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
                 comment: Description(raw: _commentController.text),
                 spentOn: _spentDate,
               ),
-            ).then((value) {
+            )
+                .then((value) {
               Navigator.of(context).pop();
             }, onError: (e) => apiErrorHandler(e, context));
           },

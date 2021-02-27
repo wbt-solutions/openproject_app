@@ -3,9 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:openproject_app/globals.dart';
 import 'package:openproject_dart_sdk/api.dart';
 import 'package:pattern_formatter/pattern_formatter.dart';
+
+import 'globals.dart';
 
 class DescriptionWidget extends StatelessWidget {
   final Description description;
@@ -167,6 +168,7 @@ class _DateTextFormFieldState extends State<DateTextFormField> {
             inputFormatters: [
               DateInputFormatter(),
             ],
+            keyboardType: TextInputType.datetime,
           ),
         ),
         IconButton(
