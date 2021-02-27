@@ -2,7 +2,7 @@ import 'package:adhara_markdown/mdeditor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:openproject_dart_sdk/api.dart';
-import 'package:pattern_formatter/date_formatter.dart';
+import 'package:pattern_formatter/pattern_formatter.dart';
 
 import '../../globals.dart';
 import '../../utils.dart';
@@ -12,7 +12,11 @@ class EditWorkPackagePage extends StatefulWidget {
   final Project project;
   final WorkPackage workPackage;
 
-  const EditWorkPackagePage({Key key, this.workPackage, @required this.project}) : super(key: key);
+  const EditWorkPackagePage({
+    Key key,
+    this.workPackage,
+    @required this.project,
+  }) : super(key: key);
 
   @override
   _EditWorkPackagePageState createState() => _EditWorkPackagePageState();
@@ -25,11 +29,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
   MarkdownEditorController _descriptionController = MarkdownEditorController();
   User _assignee;
   User _accountable;
-  TextEditingController _estimatedTimeController = TextEditingController();
+  Duration _estimatedTime;
   TextEditingController _remainingHoursController = TextEditingController();
-  TextEditingController _dateFromController = TextEditingController();
   DateTime _from;
-  TextEditingController _dateToController = TextEditingController();
   DateTime _to;
   TextEditingController _progressController = TextEditingController();
   Category _category;
@@ -41,14 +43,15 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
     super.initState();
     if (widget.workPackage != null) {
       _subjectController.text = widget.workPackage.subject;
-      _estimatedTimeController.text = widget.workPackage.estimatedTime;
+      if (widget.workPackage.estimatedTime != null) {
+        _estimatedTime =
+            SerializableDuration.parse(widget.workPackage.estimatedTime);
+      }
       // TODO _remainingHoursController.text =
       if (widget.workPackage.startDate != null) {
-        _dateFromController.text = dateFormat.format(widget.workPackage.startDate);
         _from = widget.workPackage.startDate;
       }
       if (widget.workPackage.dueDate != null) {
-        _dateToController.text = dateFormat.format(widget.workPackage.dueDate);
         _to = widget.workPackage.dueDate;
       }
       _progressController.text = widget.workPackage.percentageDone?.toString();
@@ -59,7 +62,11 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.workPackage == null ? "Neues WorkPackage" : "${widget.workPackage.subject} bearbeiten"),
+        title: Text(
+          widget.workPackage == null
+              ? "Neues WorkPackage"
+              : "${widget.workPackage.subject} bearbeiten",
+        ),
       ),
       body: Form(
         child: ListView(
@@ -84,7 +91,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (WPType type) {
                 _wpType = type;
               },
-              resolveAllItems: () => TypesApi().apiV3ProjectsProjectIdTypesGet(widget.project.id),
+              resolveAllItems: () => TypesApi().apiV3ProjectsProjectIdTypesGet(
+                widget.project.id,
+              ),
               itemWidget: (BuildContext context, WPType type) {
                 return Text(
                   type.name,
@@ -114,7 +123,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 _assignee = user;
               },
               resolveAllItems: () =>
-                  WorkPackagesApi().apiV3ProjectsProjectIdWorkPackagesAvailableAssigneesGet(widget.project.id),
+                  WorkPackagesApi().apiV3ProjectsProjectIdAvailableAssigneesGet(
+                widget.project.id,
+              ),
               itemWidget: (BuildContext context, User user) {
                 return Text(user.name);
               },
@@ -126,8 +137,10 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (User user) {
                 _accountable = user;
               },
-              resolveAllItems: () =>
-                  WorkPackagesApi().apiV3ProjectsProjectIdWorkPackagesAvailableResponsiblesGet(widget.project.id),
+              resolveAllItems: () => WorkPackagesApi()
+                  .apiV3ProjectsProjectIdAvailableResponsiblesGet(
+                widget.project.id,
+              ),
               itemWidget: (BuildContext context, User user) {
                 return Text(user.name);
               },
@@ -135,12 +148,17 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
             ),
             Divider(),
             TextFormField(
-              controller: _estimatedTimeController,
+              initialValue: _estimatedTime?.inHoursDecimal?.toString(),
               decoration: InputDecoration(labelText: "Estimated time"),
               inputFormatters: [
-                WhitelistingTextInputFormatter.digitsOnly,
+                ThousandsFormatter(allowFraction: true),
               ],
               keyboardType: TextInputType.numberWithOptions(decimal: true),
+              onChanged: (value) {
+                _estimatedTime = SerializableDuration.fromHours(
+                  double.parse(value),
+                );
+              },
             ),
             TextFormField(
               controller: _remainingHoursController,
@@ -149,51 +167,25 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
             ),
             Divider(),
             Text("Date"),
-            TextFormField(
-              controller: _dateFromController,
-              inputFormatters: [
-                DateInputFormatter(),
-              ],
-              onTap: () {
-                showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now().subtract(Duration(days: 36500)),
-                  lastDate: DateTime.now().add(Duration(days: 36500)),
-                ).then((DateTime value) {
-                  if (value != null) {
-                    _dateFromController.text = dateFormat.format(value);
-                    _from = value;
-                  }
-                });
-              },
+            DateTextFormField(
+              initialDate: _from,
+              firstDate: DateTime.now().subtract(Duration(days: 36500)),
+              lastDate: DateTime.now().add(Duration(days: 36500)),
+              onDateChange: (date) => _from = date,
             ),
             Text("-"),
-            TextFormField(
-              controller: _dateToController,
-              inputFormatters: [
-                DateInputFormatter(),
-              ],
-              onTap: () {
-                showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now().subtract(Duration(days: 36500)),
-                  lastDate: DateTime.now().add(Duration(days: 36500)),
-                ).then((DateTime value) {
-                  if (value != null) {
-                    _dateToController.text = dateFormat.format(value);
-                    _to = value;
-                  }
-                });
-              },
+            DateTextFormField(
+              initialDate: _to,
+              firstDate: DateTime.now().subtract(Duration(days: 36500)),
+              lastDate: DateTime.now().add(Duration(days: 36500)),
+              onDateChange: (date) => _to = date,
             ),
             TextFormField(
               controller: _progressController,
               decoration: InputDecoration(labelText: "Progress"),
               keyboardType: TextInputType.number,
               inputFormatters: [
-                WhitelistingTextInputFormatter.digitsOnly,
+                FilteringTextInputFormatter.digitsOnly
               ],
               validator: (value) {
                 int percent = int.tryParse(value);
@@ -212,7 +204,8 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (Category category) {
                 _category = category;
               },
-              resolveAllItems: () => CategoriesApi().apiV3ProjectsProjectIdCategoriesGet(widget.project.id),
+              resolveAllItems: () => CategoriesApi()
+                  .apiV3ProjectsProjectIdCategoriesGet(widget.project.id),
               itemWidget: (BuildContext context, Category category) {
                 return Text(category.name);
               },
@@ -224,7 +217,10 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (Version version) {
                 _version = version;
               },
-              resolveAllItems: () => VersionsApi().apiV3ProjectsProjectIdVersionsGet(widget.project.id),
+              resolveAllItems: () =>
+                  VersionsApi().apiV3ProjectsProjectIdVersionsGet(
+                widget.project.id,
+              ),
               itemWidget: (BuildContext context, Version version) {
                 return Text(version.name);
               },
@@ -244,7 +240,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               decoration: InputDecoration(labelText: "Priority"),
             ),
             MaterialButton(
-              child: Text(widget.workPackage == null ? "Erstellen" : "Speichern"),
+              child: Text(
+                widget.workPackage == null ? "Erstellen" : "Speichern",
+              ),
               onPressed: () {
                 WorkPackage w = WorkPackage();
                 w.links = WorkPackageLinks();
@@ -253,27 +251,40 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 w.links.type = Link()..href = _wpType.links.self.href;
 
                 w.subject = _subjectController.text;
-                w.description = Description()..raw = _descriptionController.text;
+                w.description = Description()
+                  ..raw = _descriptionController.text;
 
-                if (_assignee != null) w.links.assignee = Link()..href = _assignee.links.self.href;
-                if (_accountable != null) w.links.responsible = Link()..href = _accountable.links.self.href;
+                if (_assignee != null)
+                  w.links.assignee = Link()..href = _assignee.links.self.href;
+                if (_accountable != null)
+                  w.links.responsible = Link()
+                    ..href = _accountable.links.self.href;
 
-                if (_estimatedTimeController.text.isNotEmpty)
-                  w.estimatedTime = _estimatedTimeController.text; // TODO Formatting?? Remaining hours??
+                if (_estimatedTime != null)
+                  w.estimatedTime = _estimatedTime.toIso8601String();
 
                 w.startDate = _from;
                 w.dueDate = _to;
                 w.percentageDone = int.tryParse(_progressController.text);
 
-                if (_category != null) w.links.category = Link()..href = _category.links.self.href;
-                if (_version != null) w.links.version = Link()..href = _version.links.self.href;
-                if (_priority != null) w.links.priority = Link()..href = _priority.links.self.href;
+                if (_category != null)
+                  w.links.category = Link()..href = _category.links.self.href;
+                if (_version != null)
+                  w.links.version = Link()..href = _version.links.self.href;
+                if (_priority != null)
+                  w.links.priority = Link()..href = _priority.links.self.href;
 
                 if (widget.workPackage != null) {
                   w.lockVersion = widget.workPackage.lockVersion;
-                  WorkPackagesApi().apiV3WorkPackagesIdPatch(widget.workPackage.id, body: w);
+                  WorkPackagesApi().apiV3WorkPackagesIdPatch(
+                    widget.workPackage.id,
+                    workPackage: w,
+                  );
                 } else {
-                  WorkPackagesApi().apiV3ProjectsIdWorkPackagesPost(widget.project.id, w);
+                  WorkPackagesApi().apiV3ProjectsIdWorkPackagesPost(
+                    widget.project.id,
+                    w,
+                  );
                 }
               },
             )

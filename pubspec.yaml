@@ -20,13 +20,15 @@ dependencies:
   file_picker: ^1.6.2
   intl: ^0.16.1
   pattern_formatter: ^1.0.1
-  sentry: ">=3.0.0 <4.0.0"
+  sentry_flutter: ^4.0.1
   autologin_plugin:
     git: https://github.com/rekire/autologin_plugin.git
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: "^0.7.5"
+  flutter_native_splash: ^0.1.9
 
 flutter:
   uses-material-design: true
@@ -61,3 +63,13 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/icon.png"
+
+flutter_native_splash:
+  image: assets/images/logo_openproject_white_big.png
+  color: "1a67a3"
+  android_disable_fullscreen: true

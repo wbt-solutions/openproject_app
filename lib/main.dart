@@ -1,42 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:sentry/sentry.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'pages/login.dart';
 
-final SentryClient sentry =
-    SentryClient(dsn: 'https://e2f963e6ae3b4f85a21ff9c2f7f54a2d@o406434.ingest.sentry.io/5283998');
-
-void main() {
-  FlutterError.onError = (details, {bool forceReport = false}) {
-    try {
-      sentry.captureException(
-        exception: details.exception,
-        stackTrace: details.stack,
-      );
-    } catch (e) {
-      print('Sending report to sentry.io failed: $e');
-    } finally {
-      // Also use Flutter's pretty error logging to the device's console.
-      FlutterError.dumpErrorToConsole(details, forceReport: forceReport);
-    }
-  };
-
-  runZoned(
-    () => runApp(OpenProjectApp()),
-    onError: (Object error, StackTrace stackTrace) {
-      try {
-        sentry.captureException(
-          exception: error,
-          stackTrace: stackTrace,
-        );
-        print('Error sent to sentry.io: $error');
-      } catch (e) {
-        print('Sending report to sentry.io failed: $e');
-        print('Original error: $error');
-      }
+Future<void> main() async {
+  await SentryFlutter.init(
+    (options) {
+      options.dsn =
+          'https://e2f963e6ae3b4f85a21ff9c2f7f54a2d@o406434.ingest.sentry.io/5283998';
     },
+    appRunner: () => runApp(OpenProjectApp()),
   );
 }
 
@@ -46,6 +21,9 @@ class OpenProjectApp extends StatelessWidget {
     return MaterialApp(
       title: 'OpenProject App',
       home: LoginPage(),
+      theme: ThemeData(
+        primaryColor: Color.fromRGBO(26, 103, 163, 1),
+      ),
     );
   }
 }

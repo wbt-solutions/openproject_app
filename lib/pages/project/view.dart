@@ -10,17 +10,25 @@ class ViewProjectPage extends StatefulWidget {
   final User me;
   final Project project;
 
-  const ViewProjectPage({Key key, @required this.project, @required this.me}) : super(key: key);
+  const ViewProjectPage({
+    Key key,
+    @required this.project,
+    @required this.me,
+  }) : super(key: key);
 
   @override
   _ViewProjectPageState createState() => _ViewProjectPageState();
 }
 
 class _ViewProjectPageState extends State<ViewProjectPage> {
-  static const String filterAll = "[]";
-  static const String filterMe = "[{\"assigneeOrGroup\": {\"operator\":\"=\",\"values\":[\"me\"]}}]";
+  static const List<Map<String, Filter>> filterAll = [];
+  static List<Map<String, Filter>> filterMe = [
+    {
+      "assigneeOrGroup": Filter(operator_: "=", values: ["me"])
+    },
+  ];
 
-  String filter = filterAll;
+  List<Map<String, Filter>> filter = filterAll;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +57,9 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
               leading: Icon(Icons.delete),
               title: Text("Löschen"),
               onTap: () {
-                ProjectsApi().apiV3ProjectsIdDelete(widget.project.id).then((value) {
+                ProjectsApi()
+                    .apiV3ProjectsIdDelete(widget.project.id)
+                    .then((value) {
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 });
@@ -103,8 +113,12 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
             ],
           ),
           FutureBuilder(
-            future: WorkPackagesApi().apiV3ProjectsIdWorkPackagesGet(widget.project.id, filters: filter),
-            builder: (BuildContext context, AsyncSnapshot<WorkPackages> snapshot) {
+            future: WorkPackagesApi().apiV3ProjectsIdWorkPackagesGet(
+              widget.project.id,
+              filters: filter,
+            ),
+            builder:
+                (BuildContext context, AsyncSnapshot<WorkPackages> snapshot) {
               if (!snapshot.hasData) {
                 return CircularProgressIndicator();
               } else {
@@ -136,7 +150,8 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
                       ),
                     ],
                     rows: [
-                      for (WorkPackage workPackage in workPackages.embedded.elements)
+                      for (WorkPackage workPackage
+                          in workPackages.embedded.elements)
                         DataRow(
                           cells: [
                             DataCell(
@@ -162,7 +177,8 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (BuildContext context) => ViewWorkPackagePage(
+                                builder: (BuildContext context) =>
+                                    ViewWorkPackagePage(
                                   project: widget.project,
                                   workPackage: workPackage,
                                   me: widget.me,

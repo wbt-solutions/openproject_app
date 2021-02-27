@@ -19,7 +19,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
   MarkdownEditorController _descriptionController = MarkdownEditorController();
   TextEditingController _identifierController = TextEditingController();
   bool _public = false;
-  String _status;
+  ProjectStatusEnum _status;
   MarkdownEditorController _statusDescriptionController = MarkdownEditorController();
 
   @override
@@ -86,21 +86,14 @@ class _EditProjectPageState extends State<EditProjectPage> {
             DropdownButtonFormField(
               decoration: InputDecoration(labelText: "Status"),
               items: [
-                DropdownMenuItem(
-                  child: Text("on track"),
-                  value: "on track",
-                ),
-                DropdownMenuItem(
-                  child: Text("at risk"),
-                  value: "at risk",
-                ),
-                DropdownMenuItem(
-                  child: Text("off track"),
-                  value: "off track",
-                ),
+                for (var status in ProjectStatusEnum.values)
+                  DropdownMenuItem(
+                    child: Text(status.value),
+                    value: status,
+                  ),
               ],
               value: _status,
-              onChanged: (String status) {
+              onChanged: (ProjectStatusEnum status) {
                 _status = status;
               },
             ),
