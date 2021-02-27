@@ -86,19 +86,11 @@ class _EditProjectPageState extends State<EditProjectPage> {
             DropdownButtonFormField(
               decoration: InputDecoration(labelText: "Status"),
               items: [
-                // TODO dynamic
-                DropdownMenuItem(
-                  child: Text("on track"),
-                  value: ProjectStatusEnum.onTrack_,
-                ),
-                DropdownMenuItem(
-                  child: Text("at risk"),
-                  value: ProjectStatusEnum.atRisk_,
-                ),
-                DropdownMenuItem(
-                  child: Text("off track"),
-                  value: ProjectStatusEnum.offTrack_,
-                ),
+                for (var status in ProjectStatusEnum.values)
+                  DropdownMenuItem(
+                    child: Text(status.value),
+                    value: status,
+                  ),
               ],
               value: _status,
               onChanged: (ProjectStatusEnum status) {

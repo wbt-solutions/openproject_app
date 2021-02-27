@@ -46,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login(String host, String apiKey) async {
     isLoggingIn = true;
-    defaultApiClient.basePath = host;
+    defaultApiClient = ApiClient(basePath: host);
     defaultApiClient.getAuthentication<HttpBasicAuth>('basicAuth').username =
         'apikey';
     defaultApiClient.getAuthentication<HttpBasicAuth>('basicAuth').password =

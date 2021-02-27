@@ -29,7 +29,7 @@ class DescriptionWidget extends StatelessWidget {
       text = text.replaceRange(
           math.min(maxLength, text.length), text.length, "...");
     switch (description.format) {
-      case DescriptionFormatEnum.markdown_:
+      case DescriptionFormatEnum.markdown:
         return MarkdownBody(data: text);
       default:
         print(text);
