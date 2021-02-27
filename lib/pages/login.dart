@@ -89,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
       storage.write(key: "apikey", value: apiKey);
       isLoggingIn = false;
       if (save) {
-        await AutologinPlugin.saveLoginData(Credential.fromArgs(host, apiKey));
+        await AutologinPlugin.saveLoginData(Credential(host, apiKey));
       }
       Navigator.pushReplacement(
         context,
