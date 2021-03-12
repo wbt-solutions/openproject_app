@@ -219,7 +219,7 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
                 value: e,
               ))
           .toList();
-      setState(() {});
+      if (mounted) setState(() {});
     });
   }
 

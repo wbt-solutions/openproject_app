@@ -99,6 +99,9 @@ class _LoginPageState extends State<LoginPage> {
                   }
                   return null;
                 },
+                autofillHints: [
+                  AutofillHints.url,
+                ],
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: "API Key"),
