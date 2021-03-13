@@ -120,7 +120,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
             builder:
                 (BuildContext context, AsyncSnapshot<WorkPackages> snapshot) {
               if (!snapshot.hasData) {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               } else {
                 WorkPackages workPackages = snapshot.data;
                 return SingleChildScrollView(

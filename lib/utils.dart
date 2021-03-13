@@ -139,13 +139,13 @@ void apiErrorHandler(error, BuildContext context) {
           ),
           content: Text(openProjectError["message"]),
           actions: [
-            FlatButton(
+            TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
               child: Text("OK"),
             ),
-            FlatButton(
+            TextButton(
               onPressed: () {
                 Sentry.captureException(error);
                 Navigator.of(context).pop();

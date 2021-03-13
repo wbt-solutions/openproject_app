@@ -25,8 +25,7 @@ class _LoginPageState extends State<LoginPage> {
         storage.read(key: "apikey").then((String apiKey) {
           storage.read(key: "authenticateLocal").then((String value) {
             if (value == "true") {
-              authentication
-                  .authenticateWithBiometrics(
+              authentication.authenticate(
                 localizedReason: "Sie haben Authentication aktiviert",
                 sensitiveTransaction: true,
               )
@@ -108,19 +107,23 @@ class _LoginPageState extends State<LoginPage> {
                 controller: _apiKeyController,
                 autocorrect: false,
               ),
-              isLoggingIn
-                  ? Padding(
+              Builder(
+                builder: (context) {
+                  if (isLoggingIn)
+                    return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: CircularProgressIndicator(),
-                    )
-                  : MaterialButton(
-                      child: Text("Anmelden"),
-                      onPressed: () {
-                        if (_formKey.currentState.validate()) {
-                          _login(_hostController.text, _apiKeyController.text);
-                        }
-                      },
-                    ),
+                    );
+                  return MaterialButton(
+                    child: Text("Anmelden"),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        _login(_hostController.text, _apiKeyController.text);
+                      }
+                    },
+                  );
+                },
+              ),
             ],
           ),
         ),

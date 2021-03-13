@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:openproject_dart_sdk/api.dart';
 import 'package:pattern_formatter/pattern_formatter.dart';
 
-import '../../globals.dart';
 import '../../utils.dart';
 import '../../widgets.dart';
 

@@ -264,13 +264,13 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
         ),
       ),
       actions: [
-        FlatButton(
+        TextButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
           child: Text("Cancel"),
         ),
-        FlatButton(
+        TextButton(
           onPressed: () {
             TimeEntriesApi()
                 .apiV3TimeEntriesPost(
