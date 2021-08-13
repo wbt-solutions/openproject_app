@@ -2,32 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 import '../widgets.dart';
+import 'login.dart';
 import 'project/edit.dart';
 import 'project/view.dart';
 import 'settings.dart';
 
 class StartPage extends StatefulWidget {
-  final User me;
-  final Projects projects;
+  final List<OpenprojectInstance> instances;
 
-  StartPage({Key key, @required this.me, @required this.projects}) : super(key: key);
+  StartPage({
+    Key key,
+    @required this.instances,
+  }) : super(key: key);
 
   @override
-  _StartPageState createState() => _StartPageState(this.projects);
+  _StartPageState createState() => _StartPageState();
 }
 
 class _StartPageState extends State<StartPage> {
-  ProjectTree _projectTree;
+  OpenprojectInstance currentInstance;
 
-  _StartPageState(Projects projects) {
-    _projectTree = ProjectTree(projects);
+  @override
+  void initState() {
+    super.initState();
+    currentInstance = widget.instances.first;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("OpenProject von ${widget.me.name}"),
+        title: Text("OpenProject von ${currentInstance.me.name}"),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.settings),
@@ -45,10 +50,50 @@ class _StartPageState extends State<StartPage> {
       drawer: Drawer(
         child: ListView(
           children: <Widget>[
-            DrawerHeader(
-              child: Text(widget.me.name),
+            ListTile(
+              title: Text(
+                currentInstance.me.name,
+              ),
             ),
-            _buildPanel(widget.me, _projectTree.rootNode),
+            ListTile(
+              title: DropdownButton(
+                isExpanded: true,
+                onChanged: (value) {
+                  setState(() {
+                    currentInstance = value;
+                  });
+                },
+                value: currentInstance,
+                items: [
+                  for (final inst in widget.instances)
+                    DropdownMenuItem(
+                      child: Text(inst.client.basePath),
+                      value: inst,
+                    ),
+                ],
+              ),
+              trailing: IconButton(
+                icon: Icon(Icons.add),
+                tooltip: "Account hinzufügen",
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => LoginPage(
+                        instances: widget.instances,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            RefreshIndicator(
+              onRefresh: currentInstance.refresh,
+              child: _buildPanel(
+                currentInstance,
+                currentInstance.projectTree.rootNode,
+              ),
+            ),
             ListTile(
               leading: Icon(Icons.add),
               title: Text("Add Project"),
@@ -67,7 +112,11 @@ class _StartPageState extends State<StartPage> {
     );
   }
 
-  Widget _buildPanel(User me, ProjectNode node, {int depth = 0}) {
+  Widget _buildPanel(
+    OpenprojectInstance instance,
+    ProjectNode node, {
+    int depth = 0,
+  }) {
     if (node.children.length == 0) return Text("Keine Subprojekte vorhanden");
     EdgeInsets leftPadding = EdgeInsets.only(left: 9.0 * (depth + 1));
     return ExpansionPanelList(
@@ -97,14 +146,18 @@ class _StartPageState extends State<StartPage> {
                   MaterialPageRoute(
                     builder: (BuildContext context) => ViewProjectPage(
                       project: item.project,
-                      me: me,
+                      instance: instance,
                     ),
                   ),
                 );
               },
             );
           },
-          body: _buildPanel(me, item, depth: depth + 1),
+          body: _buildPanel(
+            instance,
+            item,
+            depth: depth + 1,
+          ),
           isExpanded: item.isExpanded,
         );
       }).toList(),

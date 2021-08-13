@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 import '../../widgets.dart';
+import '../login.dart';
 import '../work_package/edit.dart';
 import '../work_package/view.dart';
 import 'edit.dart';
 
 class ViewProjectPage extends StatefulWidget {
-  final User me;
+  final OpenprojectInstance instance;
   final Project project;
 
   const ViewProjectPage({
     Key key,
     @required this.project,
-    @required this.me,
+    @required this.instance,
   }) : super(key: key);
 
   @override
@@ -47,6 +48,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
                   context,
                   MaterialPageRoute(
                     builder: (BuildContext context) => EditProjectPage(
+                      instance: widget.instance,
                       project: widget.project,
                     ),
                   ),
@@ -57,8 +59,12 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
               leading: Icon(Icons.delete),
               title: Text("Löschen"),
               onTap: () {
-                ProjectsApi()
-                    .apiV3ProjectsIdDelete(widget.project.id)
+                ProjectsApi(
+                  widget.instance.client,
+                )
+                    .apiV3ProjectsIdDelete(
+                  widget.project.id,
+                )
                     .then((value) {
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
@@ -77,8 +83,12 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
       body: ListView(
         padding: const EdgeInsets.all(8.0),
         children: <Widget>[
-          DescriptionWidget(description: widget.project.description),
-          DescriptionWidget(description: widget.project.statusExplanation),
+          DescriptionWidget(
+            description: widget.project.description,
+          ),
+          DescriptionWidget(
+            description: widget.project.statusExplanation,
+          ),
           Row(
             children: <Widget>[
               Text(
@@ -92,6 +102,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
                     context,
                     MaterialPageRoute(
                       builder: (BuildContext context) => EditWorkPackagePage(
+                        instance: widget.instance,
                         project: widget.project,
                       ),
                     ),
@@ -113,14 +124,18 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
             ],
           ),
           FutureBuilder(
-            future: WorkPackagesApi().apiV3ProjectsIdWorkPackagesGet(
+            future: WorkPackagesApi(
+              widget.instance.client,
+            ).apiV3ProjectsIdWorkPackagesGet(
               widget.project.id,
               filters: filter,
             ),
             builder:
                 (BuildContext context, AsyncSnapshot<WorkPackages> snapshot) {
               if (!snapshot.hasData) {
-                return Center(child: CircularProgressIndicator());
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
               } else {
                 WorkPackages workPackages = snapshot.data;
                 return SingleChildScrollView(
@@ -181,7 +196,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
                                     ViewWorkPackagePage(
                                   project: widget.project,
                                   workPackage: workPackage,
-                                  me: widget.me,
+                                  instance: widget.instance,
                                 ),
                               ),
                             );

@@ -6,8 +6,10 @@ import 'package:pattern_formatter/pattern_formatter.dart';
 
 import '../../utils.dart';
 import '../../widgets.dart';
+import '../login.dart';
 
 class EditWorkPackagePage extends StatefulWidget {
+  final OpenprojectInstance instance;
   final Project project;
   final WorkPackage workPackage;
 
@@ -15,6 +17,7 @@ class EditWorkPackagePage extends StatefulWidget {
     Key key,
     this.workPackage,
     @required this.project,
+    @required this.instance,
   }) : super(key: key);
 
   @override
@@ -77,7 +80,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (Status status) {
                 _status = status;
               },
-              resolveAllItems: () => StatusesApi().apiV3StatusesGet(),
+              resolveAllItems: () => StatusesApi(
+                widget.instance.client,
+              ).apiV3StatusesGet(),
               itemWidget: (BuildContext context, Status status) {
                 return Text(status.name);
               },
@@ -90,26 +95,36 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (WPType type) {
                 _wpType = type;
               },
-              resolveAllItems: () => TypesApi().apiV3ProjectsProjectIdTypesGet(
+              resolveAllItems: () => TypesApi(
+                widget.instance.client,
+              ).apiV3ProjectsProjectIdTypesGet(
                 widget.project.id,
               ),
               itemWidget: (BuildContext context, WPType type) {
                 return Text(
                   type.name,
-                  style: TextStyle(color: HexColor.fromHex(type.color)),
+                  style: TextStyle(
+                    color: HexColor.fromHex(type.color),
+                  ),
                 );
               },
               defaultIndex: 0,
-              decoration: InputDecoration(labelText: "Type"),
+              decoration: InputDecoration(
+                labelText: "Type",
+              ),
             ),
             TextFormField(
               controller: _subjectController,
-              decoration: InputDecoration(labelText: "Subject"),
+              decoration: InputDecoration(
+                labelText: "Subject",
+              ),
               maxLength: 255,
             ),
             MarkdownEditor(
               controller: _descriptionController,
-              decoration: InputDecoration(labelText: "Description"),
+              decoration: InputDecoration(
+                labelText: "Description",
+              ),
               value: widget.workPackage?.description?.raw,
               autoFocus: false,
               tokenConfigs: [],
@@ -121,14 +136,17 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (User user) {
                 _assignee = user;
               },
-              resolveAllItems: () =>
-                  WorkPackagesApi().apiV3ProjectsProjectIdAvailableAssigneesGet(
+              resolveAllItems: () => WorkPackagesApi(
+                widget.instance.client,
+              ).apiV3ProjectsProjectIdAvailableAssigneesGet(
                 widget.project.id,
               ),
               itemWidget: (BuildContext context, User user) {
                 return Text(user.name);
               },
-              decoration: InputDecoration(labelText: "Assignee"),
+              decoration: InputDecoration(
+                labelText: "Assignee",
+              ),
             ),
             CollectionDropDownFormField<Users, User>(
               currentItemLink: widget.workPackage?.links?.responsible,
@@ -136,23 +154,30 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (User user) {
                 _accountable = user;
               },
-              resolveAllItems: () => WorkPackagesApi()
-                  .apiV3ProjectsProjectIdAvailableResponsiblesGet(
+              resolveAllItems: () => WorkPackagesApi(
+                widget.instance.client,
+              ).apiV3ProjectsProjectIdAvailableResponsiblesGet(
                 widget.project.id,
               ),
               itemWidget: (BuildContext context, User user) {
                 return Text(user.name);
               },
-              decoration: InputDecoration(labelText: "Accountable"),
+              decoration: InputDecoration(
+                labelText: "Accountable",
+              ),
             ),
             Divider(),
             TextFormField(
               initialValue: _estimatedTime?.inHoursDecimal?.toString(),
               decoration: InputDecoration(labelText: "Estimated time"),
               inputFormatters: [
-                ThousandsFormatter(allowFraction: true),
+                ThousandsFormatter(
+                  allowFraction: true,
+                ),
               ],
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               onChanged: (value) {
                 _estimatedTime = SerializableDuration.fromHours(
                   double.parse(value),
@@ -162,21 +187,31 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
             TextFormField(
               controller: _remainingHoursController,
               decoration: InputDecoration(labelText: "Remaining Hours"),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: TextInputType.numberWithOptions(
+                decimal: true,
+              ),
             ),
             Divider(),
             Text("Date"),
             DateTextFormField(
               initialDate: _from,
-              firstDate: DateTime.now().subtract(Duration(days: 36500)),
-              lastDate: DateTime.now().add(Duration(days: 36500)),
+              firstDate: DateTime.now().subtract(Duration(
+                days: 36500,
+              )),
+              lastDate: DateTime.now().add(Duration(
+                days: 36500,
+              )),
               onDateChange: (date) => _from = date,
             ),
             Text("-"),
             DateTextFormField(
               initialDate: _to,
-              firstDate: DateTime.now().subtract(Duration(days: 36500)),
-              lastDate: DateTime.now().add(Duration(days: 36500)),
+              firstDate: DateTime.now().subtract(Duration(
+                days: 36500,
+              )),
+              lastDate: DateTime.now().add(Duration(
+                days: 36500,
+              )),
               onDateChange: (date) => _to = date,
             ),
             TextFormField(
@@ -184,7 +219,7 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               decoration: InputDecoration(labelText: "Progress"),
               keyboardType: TextInputType.number,
               inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly
+                FilteringTextInputFormatter.digitsOnly,
               ],
               validator: (value) {
                 int percent = int.tryParse(value);
@@ -203,8 +238,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (Category category) {
                 _category = category;
               },
-              resolveAllItems: () => CategoriesApi()
-                  .apiV3ProjectsProjectIdCategoriesGet(widget.project.id),
+              resolveAllItems: () => CategoriesApi(
+                widget.instance.client,
+              ).apiV3ProjectsProjectIdCategoriesGet(widget.project.id),
               itemWidget: (BuildContext context, Category category) {
                 return Text(category.name);
               },
@@ -216,8 +252,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (Version version) {
                 _version = version;
               },
-              resolveAllItems: () =>
-                  VersionsApi().apiV3ProjectsProjectIdVersionsGet(
+              resolveAllItems: () => VersionsApi(
+                widget.instance.client,
+              ).apiV3ProjectsProjectIdVersionsGet(
                 widget.project.id,
               ),
               itemWidget: (BuildContext context, Version version) {
@@ -231,7 +268,9 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               onChanged: (Priority priority) {
                 _priority = priority;
               },
-              resolveAllItems: () => PrioritiesApi().apiV3PrioritiesGet(),
+              resolveAllItems: () => PrioritiesApi(
+                widget.instance.client,
+              ).apiV3PrioritiesGet(),
               itemWidget: (BuildContext context, Priority priority) {
                 return Text(priority.name);
               },
@@ -275,12 +314,16 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
 
                 if (widget.workPackage != null) {
                   w.lockVersion = widget.workPackage.lockVersion;
-                  WorkPackagesApi().apiV3WorkPackagesIdPatch(
+                  WorkPackagesApi(
+                    widget.instance.client,
+                  ).apiV3WorkPackagesIdPatch(
                     widget.workPackage.id,
                     workPackage: w,
                   );
                 } else {
-                  WorkPackagesApi().apiV3ProjectsIdWorkPackagesPost(
+                  WorkPackagesApi(
+                    widget.instance.client,
+                  ).apiV3ProjectsIdWorkPackagesPost(
                     widget.project.id,
                     w,
                   );

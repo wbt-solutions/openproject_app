@@ -3,11 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 import '../../widgets.dart';
+import '../login.dart';
 
 class EditProjectPage extends StatefulWidget {
+  final OpenprojectInstance instance;
   final Project project;
 
-  const EditProjectPage({Key key, this.project}) : super(key: key);
+  const EditProjectPage({
+    Key key,
+    this.project,
+    this.instance,
+  }) : super(key: key);
 
   @override
   _EditProjectPageState createState() => _EditProjectPageState();
@@ -20,7 +26,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
   TextEditingController _identifierController = TextEditingController();
   bool _public = false;
   ProjectStatusEnum _status;
-  MarkdownEditorController _statusDescriptionController = MarkdownEditorController();
+  MarkdownEditorController _statusDescriptionController =
+      MarkdownEditorController();
 
   @override
   void initState() {
@@ -37,7 +44,11 @@ class _EditProjectPageState extends State<EditProjectPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.project == null ? "Neues Projekt" : "${widget.project.name} bearbeiten"),
+        title: Text(
+          widget.project == null
+              ? "Neues Projekt"
+              : "${widget.project.name} bearbeiten",
+        ),
       ),
       body: Form(
         child: ListView(
@@ -57,21 +68,29 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 return Text(project.name);
               },
               resolveAllItems: () {
-                return ProjectsApi().apiV3ProjectsAvailableParentProjectsGet(
+                return ProjectsApi(
+                  widget.instance.client,
+                ).apiV3ProjectsAvailableParentProjectsGet(
                   of_: widget.project?.identifier,
                 );
               },
-              decoration: InputDecoration(labelText: "Subprojekt von"),
+              decoration: InputDecoration(
+                labelText: "Subprojekt von",
+              ),
             ),
             MarkdownEditor(
-              decoration: InputDecoration(labelText: "Beschreibung"),
+              decoration: InputDecoration(
+                labelText: "Beschreibung",
+              ),
               autoFocus: false,
               controller: _descriptionController,
               value: widget.project?.description?.raw,
               tokenConfigs: [], // TODO
             ),
             TextFormField(
-              decoration: InputDecoration(labelText: "Identifier"),
+              decoration: InputDecoration(
+                labelText: "Identifier",
+              ),
               controller: _identifierController,
             ),
             Text("Public"),
@@ -84,7 +103,9 @@ class _EditProjectPageState extends State<EditProjectPage> {
               },
             ),
             DropdownButtonFormField(
-              decoration: InputDecoration(labelText: "Status"),
+              decoration: InputDecoration(
+                labelText: "Status",
+              ),
               items: [
                 for (var status in ProjectStatusEnum.values)
                   DropdownMenuItem(
@@ -98,14 +119,18 @@ class _EditProjectPageState extends State<EditProjectPage> {
               },
             ),
             MarkdownEditor(
-              decoration: InputDecoration(labelText: "Status Beschreibung"),
+              decoration: InputDecoration(
+                labelText: "Status Beschreibung",
+              ),
               autoFocus: false,
               controller: _statusDescriptionController,
               value: widget.project?.statusExplanation?.raw,
               tokenConfigs: [], // TODO
             ),
             MaterialButton(
-              child: Text(widget.project == null ? "Erstellen" : "Speichern"),
+              child: Text(
+                widget.project == null ? "Erstellen" : "Speichern",
+              ),
               onPressed: () {
                 Project sendProject = Project();
                 sendProject.name = _nameController.text;
@@ -120,12 +145,20 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 sendProject.public = _public;
                 sendProject.status = _status;
                 sendProject.statusExplanation = Description();
-                sendProject.statusExplanation.raw = _statusDescriptionController.text;
+                sendProject.statusExplanation.raw =
+                    _statusDescriptionController.text;
 
                 if (widget.project == null) {
-                  ProjectsApi().apiV3ProjectsPost(sendProject);
+                  ProjectsApi(
+                    widget.instance.client,
+                  ).apiV3ProjectsPost(sendProject);
                 } else {
-                  ProjectsApi().apiV3ProjectsIdPatch(widget.project.id, sendProject);
+                  ProjectsApi(
+                    widget.instance.client,
+                  ).apiV3ProjectsIdPatch(
+                    widget.project.id,
+                    sendProject,
+                  );
                 }
               },
             ),

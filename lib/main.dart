@@ -2,10 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'pages/login.dart';
+import 'globals.dart';
+import 'pages/loading.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  prefs = await SharedPreferences.getInstance();
   await SentryFlutter.init(
     (options) {
       options.dsn =
@@ -20,7 +24,7 @@ class OpenProjectApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'OpenProject App',
-      home: LoginPage(),
+      home: LoadingPage(),
       theme: ThemeData(
         primaryColor: Color.fromRGBO(26, 103, 163, 1),
       ),

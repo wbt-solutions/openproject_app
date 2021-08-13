@@ -6,17 +6,18 @@ import 'package:openproject_dart_sdk/api.dart';
 
 import '../../utils.dart';
 import '../../widgets.dart';
+import '../login.dart';
 import 'edit.dart';
 
 class ViewWorkPackagePage extends StatelessWidget {
-  final User me;
+  final OpenprojectInstance instance;
   final Project project;
   final WorkPackage workPackage;
 
   const ViewWorkPackagePage({
     Key key,
     @required this.workPackage,
-    @required this.me,
+    @required this.instance,
     @required this.project,
   }) : super(key: key);
 
@@ -38,6 +39,7 @@ class ViewWorkPackagePage extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (BuildContext context) => EditWorkPackagePage(
+                      instance: instance,
                       workPackage: workPackage,
                       project: project,
                     ),
@@ -50,9 +52,9 @@ class ViewWorkPackagePage extends StatelessWidget {
               title: Text("Löschen"),
               onTap: () {
                 Navigator.of(context).pop();
-                WorkPackagesApi()
-                    .apiV3WorkPackagesIdDelete(workPackage.id)
-                    .then((value) {
+                WorkPackagesApi(
+                  instance.client,
+                ).apiV3WorkPackagesIdDelete(workPackage.id).then((value) {
                   Navigator.of(context).pop();
                 });
               },
@@ -62,14 +64,16 @@ class ViewWorkPackagePage extends StatelessWidget {
               title: Text("Mir zuweisen"),
               onTap: () {
                 Navigator.of(context).pop();
-                WorkPackagesApi()
+                WorkPackagesApi(
+                  instance.client,
+                )
                     .apiV3WorkPackagesIdPatch(
                   workPackage.id,
                   workPackage: WorkPackage()
                     ..lockVersion = workPackage.lockVersion
                     ..links = WorkPackageLinks()
                     ..links.assignee = Link()
-                    ..links.assignee.href = me.links.self.href,
+                    ..links.assignee.href = instance.me.links.self.href,
                 )
                     .catchError((Object error) {
                   if (error is ApiException) {
@@ -89,7 +93,9 @@ class ViewWorkPackagePage extends StatelessWidget {
               title: Text("Status setzen"),
               onTap: () {
                 Navigator.of(context).pop();
-                StatusesApi().apiV3StatusesGet().then((Statuses statuses) {
+                StatusesApi(
+                  instance.client,
+                ).apiV3StatusesGet().then((Statuses statuses) {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
@@ -100,7 +106,9 @@ class ViewWorkPackagePage extends StatelessWidget {
                             SimpleDialogOption(
                               child: Text(status.name),
                               onPressed: () {
-                                WorkPackagesApi()
+                                WorkPackagesApi(
+                                  instance.client,
+                                )
                                     .apiV3WorkPackagesIdPatch(
                                   workPackage.id,
                                   workPackage: WorkPackage()
@@ -129,6 +137,7 @@ class ViewWorkPackagePage extends StatelessWidget {
               },
             ),
             ListTile(
+              leading: Icon(Icons.access_time),
               title: Text("Zeit buchen"),
               onTap: () {
                 Navigator.of(context).pop();
@@ -136,6 +145,7 @@ class ViewWorkPackagePage extends StatelessWidget {
                   context: context,
                   builder: (context) {
                     return TimeEntryBookingDialog(
+                      instance: instance,
                       project: project,
                       workPackage: workPackage,
                     );
@@ -168,6 +178,7 @@ class ViewWorkPackagePage extends StatelessWidget {
 }
 
 class TimeEntryBookingDialog extends StatefulWidget {
+  final OpenprojectInstance instance;
   final Project project;
   final WorkPackage workPackage;
 
@@ -175,6 +186,7 @@ class TimeEntryBookingDialog extends StatefulWidget {
     Key key,
     @required this.project,
     @required this.workPackage,
+    @required this.instance,
   }) : super(key: key);
 
   @override
@@ -192,7 +204,7 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
   @override
   void initState() {
     super.initState();
-    defaultApiClient
+    widget.instance.client
         .invokeAPI(
       "/api/v3/time_entries/form",
       'POST',
@@ -272,7 +284,9 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
         ),
         TextButton(
           onPressed: () {
-            TimeEntriesApi()
+            TimeEntriesApi(
+              widget.instance.client,
+            )
                 .apiV3TimeEntriesPost(
               TimeEntry(
                 links: TimeEntryLinks(

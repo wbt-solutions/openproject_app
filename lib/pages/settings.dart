@@ -36,7 +36,10 @@ class _SettingsPageState extends State<SettingsPage> {
               setState(() {
                 authOnStart = val;
               });
-              storage.write(key: "authenticateLocal", value: val.toString());
+              storage.write(
+                key: "authenticateLocal",
+                value: val.toString(),
+              );
             },
           ),
           ListTile(
