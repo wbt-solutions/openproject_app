@@ -1,7 +1,9 @@
 name: openproject_app
 description: An OpenProject flutter app
 
-version: 1.0.0+1
+publish_to: 'none'
+
+version: 0.0.1+1
 
 environment:
   sdk: ">=2.6.0 <3.0.0"
