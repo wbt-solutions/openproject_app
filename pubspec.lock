@@ -245,7 +245,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "126831d383c4def1a9db49354712831ab656da92"
+      resolved-ref: "3373bdab93bccf1e448d82d45f31786e01a1795c"
       url: "https://github.com/wbt-solutions/openproject_dart_sdk.git"
     source: git
     version: "0.2.1"

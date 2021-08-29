@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
@@ -22,14 +24,14 @@ class ViewProjectPage extends StatefulWidget {
 }
 
 class _ViewProjectPageState extends State<ViewProjectPage> {
-  static const List<Map<String, Filter>> filterAll = [];
-  static List<Map<String, Filter>> filterMe = [
+  static const List<Map<String, Map<String, dynamic>>> filterAll = [];
+  static List<Map<String, Map<String, dynamic>>> filterMe = [
     {
-      "assigneeOrGroup": Filter(operator_: "=", values: ["me"])
+      "assigneeOrGroup": Filter(operator_: "=", values: ["me"]).toJson()
     },
   ];
 
-  List<Map<String, Filter>> filter = filterAll;
+  List<Map<String, Map<String, dynamic>>> filter = filterAll;
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +130,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
               widget.instance.client,
             ).apiV3ProjectsIdWorkPackagesGet(
               widget.project.id,
-              filters: filter,
+              filters: jsonEncode(filter),
             ),
             builder:
                 (BuildContext context, AsyncSnapshot<WorkPackages> snapshot) {
