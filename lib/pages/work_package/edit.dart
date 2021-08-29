@@ -12,10 +12,12 @@ class EditWorkPackagePage extends StatefulWidget {
   final OpenprojectInstance instance;
   final Project project;
   final WorkPackage workPackage;
+  final WorkPackage parent;
 
   const EditWorkPackagePage({
     Key key,
     this.workPackage,
+    this.parent,
     @required this.project,
     @required this.instance,
   }) : super(key: key);

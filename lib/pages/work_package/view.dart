@@ -6,6 +6,7 @@ import 'package:openproject_dart_sdk/api.dart';
 
 import '../../utils.dart';
 import '../../widgets.dart';
+import '../../widgets/work_package_table.dart';
 import '../login.dart';
 import 'edit.dart';
 
@@ -170,6 +171,11 @@ class ViewWorkPackagePage extends StatelessWidget {
               style: Theme.of(context).textTheme.headline5,
             ),
             Text(workPackage.links.status.title),
+            WorkPackageTable(
+              instance: instance,
+              project: project,
+              parent: workPackage,
+            ),
           ],
         ),
       ),

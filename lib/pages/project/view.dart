@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 import '../../widgets.dart';
+import '../../widgets/work_package_table.dart';
 import '../login.dart';
-import '../work_package/edit.dart';
-import '../work_package/view.dart';
 import 'edit.dart';
 
 class ViewProjectPage extends StatefulWidget {
@@ -24,15 +21,6 @@ class ViewProjectPage extends StatefulWidget {
 }
 
 class _ViewProjectPageState extends State<ViewProjectPage> {
-  static const List<Map<String, Map<String, dynamic>>> filterAll = [];
-  static List<Map<String, Map<String, dynamic>>> filterMe = [
-    {
-      "assigneeOrGroup": Filter(operator_: "=", values: ["me"]).toJson()
-    },
-  ];
-
-  List<Map<String, Map<String, dynamic>>> filter = filterAll;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,124 +79,9 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
           DescriptionWidget(
             description: widget.project.statusExplanation,
           ),
-          Row(
-            children: <Widget>[
-              Text(
-                "Arbeitspakete",
-                style: Theme.of(context).textTheme.headline5,
-              ),
-              IconButton(
-                icon: Icon(Icons.add),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) => EditWorkPackagePage(
-                        instance: widget.instance,
-                        project: widget.project,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.person),
-                onPressed: () {
-                  setState(() {
-                    if (filter == filterAll) {
-                      filter = filterMe;
-                    } else {
-                      filter = filterAll;
-                    }
-                  });
-                },
-              )
-            ],
-          ),
-          FutureBuilder(
-            future: WorkPackagesApi(
-              widget.instance.client,
-            ).apiV3ProjectsIdWorkPackagesGet(
-              widget.project.id,
-              filters: jsonEncode(filter),
-            ),
-            builder:
-                (BuildContext context, AsyncSnapshot<WorkPackages> snapshot) {
-              if (!snapshot.hasData) {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else {
-                WorkPackages workPackages = snapshot.data;
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    showCheckboxColumn: false,
-                    columnSpacing: 10,
-                    columns: [
-                      DataColumn(
-                        label: Text("TYP"),
-                      ),
-                      DataColumn(
-                        label: Text("ID"),
-                        numeric: true,
-                      ),
-                      DataColumn(
-                        label: Text("THEMA"),
-                      ),
-                      DataColumn(
-                        label: Text("STATUS"),
-                      ),
-                      DataColumn(
-                        label: Text("ZUGEWIESEN AN"),
-                      ),
-                      DataColumn(
-                        label: Text("PRIORITÄT"),
-                      ),
-                    ],
-                    rows: [
-                      for (WorkPackage workPackage
-                          in workPackages.embedded.elements)
-                        DataRow(
-                          cells: [
-                            DataCell(
-                              Text(workPackage.links.type.title),
-                            ),
-                            DataCell(
-                              Text(workPackage.id.toString()),
-                            ),
-                            DataCell(
-                              Text(workPackage.subject),
-                            ),
-                            DataCell(
-                              Text(workPackage.links.status.title),
-                            ),
-                            DataCell(
-                              Text(workPackage.links.assignee.title ?? "-"),
-                            ),
-                            DataCell(
-                              Text(workPackage.links.priority.title),
-                            ),
-                          ],
-                          onSelectChanged: (bool selected) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    ViewWorkPackagePage(
-                                  project: widget.project,
-                                  workPackage: workPackage,
-                                  instance: widget.instance,
-                                ),
-                              ),
-                            );
-                          },
-                        )
-                    ],
-                  ),
-                );
-              }
-            },
+          WorkPackageTable(
+            instance: widget.instance,
+            project: widget.project,
           ),
         ],
       ),
