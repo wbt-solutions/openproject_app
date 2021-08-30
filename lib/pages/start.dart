@@ -67,7 +67,7 @@ class _StartPageState extends State<StartPage> {
                 items: [
                   for (final inst in widget.instances)
                     DropdownMenuItem(
-                      child: Text(inst.client.basePath),
+                      child: Text(inst.host),
                       value: inst,
                     ),
                 ],

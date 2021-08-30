@@ -191,4 +191,6 @@ class OpenprojectInstance {
       return false;
     }
   }
+
+  String get host => Uri.parse(client.basePath).host;
 }
