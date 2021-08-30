@@ -26,6 +26,7 @@ class DescriptionWidget extends StatelessWidget {
         width: 0,
         height: 0,
       );
+    text = unescape.convert(text);
     if (maxLength != null && text.length > maxLength)
       text = text.replaceRange(
           math.min(maxLength, text.length), text.length, "...");
