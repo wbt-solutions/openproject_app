@@ -6,6 +6,7 @@ import 'package:openproject_dart_sdk/api.dart';
 
 import '../../utils.dart';
 import '../../widgets.dart';
+import '../../widgets/scaffold_back.dart';
 import '../../widgets/work_package_table.dart';
 import '../login.dart';
 import 'edit.dart';
@@ -26,6 +27,7 @@ class ViewWorkPackagePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: ScaffoldBack(),
         title: Text("${workPackage.links.type.title} ${workPackage.subject}"),
       ),
       endDrawer: Drawer(

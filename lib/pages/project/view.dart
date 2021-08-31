@@ -3,6 +3,7 @@ import 'package:openproject_dart_sdk/api.dart';
 
 import '../../widgets.dart';
 import '../../widgets/work_package_table.dart';
+import '../../widgets/scaffold_back.dart';
 import '../login.dart';
 import 'edit.dart';
 
@@ -25,6 +26,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: ScaffoldBack(),
         title: Text(widget.project.name),
       ),
       endDrawer: Drawer(
