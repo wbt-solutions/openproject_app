@@ -26,6 +26,11 @@ class OpenProjectApp extends StatelessWidget {
       title: 'OpenProject App',
       home: LoadingPage(),
       theme: ThemeData(
+        brightness: Brightness.light,
+        primaryColor: Color.fromRGBO(26, 103, 163, 1),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
         primaryColor: Color.fromRGBO(26, 103, 163, 1),
       ),
     );
