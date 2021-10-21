@@ -101,7 +101,9 @@ class _StartPageState extends State<StartPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (BuildContext context) => EditProjectPage(),
+                    builder: (BuildContext context) => EditProjectPage(
+                      instance: currentInstance,
+                    ),
                   ),
                 );
               },
