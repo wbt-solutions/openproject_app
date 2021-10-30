@@ -67,7 +67,8 @@ class _LoginPageState extends State<LoginPage> {
                             controller: _hostController,
                             autocorrect: false,
                             validator: (value) {
-                              if (!Uri.parse(value).isAbsolute) {
+                              final uri = Uri.tryParse(value);
+                              if (uri == null || !uri.isAbsolute) {
                                 return "Bitte gebe einen validen Host ein";
                               }
                               return null;
