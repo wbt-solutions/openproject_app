@@ -137,45 +137,50 @@ class _WorkPackageTableState extends State<WorkPackageTable> {
                       label: Text("PRIORITÄT"),
                     ),
                   ],
-                  rows: [
-                    for (WorkPackage workPackage
-                        in workPackages.embedded.elements)
-                      DataRow(
-                        cells: [
-                          DataCell(
-                            Text(workPackage.links.type.title),
-                          ),
-                          DataCell(
-                            Text(workPackage.id.toString()),
-                          ),
-                          DataCell(
-                            Text(workPackage.subject),
-                          ),
-                          DataCell(
-                            Text(workPackage.links.status.title),
-                          ),
-                          DataCell(
-                            Text(workPackage.links.assignee.title ?? "-"),
-                          ),
-                          DataCell(
-                            Text(workPackage.links.priority.title),
-                          ),
-                        ],
-                        onSelectChanged: (bool selected) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (BuildContext context) =>
-                                  ViewWorkPackagePage(
-                                project: widget.project,
-                                workPackage: workPackage,
-                                instance: widget.instance,
-                              ),
-                            ),
-                          );
-                        },
+                  rows: workPackages.embedded.elements
+                      .where(
+                        (workPackage) =>
+                            workPackage.links.parent.href ==
+                            widget.parent?.links?.self?.href,
                       )
-                  ],
+                      .map(
+                        (workPackage) => DataRow(
+                          cells: [
+                            DataCell(
+                              Text(workPackage.links.type.title),
+                            ),
+                            DataCell(
+                              Text(workPackage.id.toString()),
+                            ),
+                            DataCell(
+                              Text(workPackage.subject),
+                            ),
+                            DataCell(
+                              Text(workPackage.links.status.title),
+                            ),
+                            DataCell(
+                              Text(workPackage.links.assignee.title ?? "-"),
+                            ),
+                            DataCell(
+                              Text(workPackage.links.priority.title),
+                            ),
+                          ],
+                          onSelectChanged: (bool selected) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    ViewWorkPackagePage(
+                                  project: widget.project,
+                                  workPackage: workPackage,
+                                  instance: widget.instance,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                      .toList(),
                 ),
               );
             }
