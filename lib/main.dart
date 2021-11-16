@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'globals.dart';
 import 'pages/loading.dart';
@@ -33,6 +34,14 @@ class OpenProjectApp extends StatelessWidget {
         brightness: Brightness.dark,
         primaryColor: Color.fromRGBO(26, 103, 163, 1),
       ),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('de', ''),
+        Locale('en', ''),
+      ],
     );
   }
 }

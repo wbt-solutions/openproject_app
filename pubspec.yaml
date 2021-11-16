@@ -11,9 +11,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   openproject_dart_sdk:
     git: https://github.com/wbt-solutions/openproject_dart_sdk.git
-  flutter_secure_storage: ^5.0.0
+  flutter_secure_storage: ^5.0.2
   cached_network_image: ^3.1.0+1
   flutter_markdown: ^0.6.8
   adhara_markdown: ^0.2.0

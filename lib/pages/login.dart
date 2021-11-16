@@ -137,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  Text("data"),
+                  Center(child: Text("Not Implemented yet")),
                 ],
               ),
             ),
@@ -188,7 +188,6 @@ class OpenprojectInstance {
       await this.refresh();
       return true;
     } catch (e) {
-      print("Exception when calling ActivitiesApi->apiV3ActivitiesIdGet: $e\n");
       return false;
     }
   }
