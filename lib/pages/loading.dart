@@ -71,6 +71,7 @@ class _LoadingPageState extends State<LoadingPage> {
           },
         );
         testedInstances.removeWhere((key, value) => !value);
+        // TODO if no Account remains
         Navigator.push(
           context,
           MaterialPageRoute(
