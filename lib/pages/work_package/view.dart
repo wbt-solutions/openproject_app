@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
 import '../../utils.dart';
@@ -303,7 +304,7 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
                   activity: _currentTimeEntriesActivity.links.self,
                 ),
                 hours: SerializableDuration.fromHours(
-                  double.parse(
+                  NumberFormat().parse(
                     _hoursController.text,
                   ),
                 ).toIso8601String(),
