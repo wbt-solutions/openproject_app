@@ -11,51 +11,55 @@ class WorkPackageTable extends StatefulWidget {
   final OpenprojectInstance instance;
   final Project project;
   final WorkPackage parent;
-  final List<Map<String, Map<String, dynamic>>> filterAll;
-  final List<Map<String, Map<String, dynamic>>> filterMe;
 
   WorkPackageTable({
     Key key,
     @required this.instance,
     @required this.project,
     this.parent,
-  })  : filterAll = [
-          if (parent != null)
-            {
-              "parent": Filter(
-                operator_: "=",
-                values: [parent.id.toString()],
-              ).toJson(),
-            }
-        ],
-        filterMe = [
-          if (parent != null)
-            {
-              "parent": Filter(
-                operator_: "=",
-                values: [parent.id.toString()],
-              ).toJson(),
-            },
-          {
-            "assigneeOrGroup": Filter(
-              operator_: "=",
-              values: ["me"],
-            ).toJson(),
-          },
-        ],
-        super(key: key);
+  }) : super(key: key);
 
   @override
   _WorkPackageTableState createState() => _WorkPackageTableState();
 }
 
 class _WorkPackageTableState extends State<WorkPackageTable> {
-  List<Map<String, Map<String, dynamic>>> filter;
+  List<Map<String, Map<String, dynamic>>> filter = [];
+  List<bool> _selections = [
+    true,
+    false,
+  ];
 
   @override
   void initState() {
-    filter = widget.filterAll;
+    updateFilter();
     super.initState();
+  }
+
+  void updateFilter() {
+    List<Map<String, Map<String, dynamic>>> filter = [];
+    if (_selections[0])
+      filter.add({
+        "status": Filter(
+          operator_: "=",
+          values: ["1"],
+        ).toJson(),
+      });
+    if (_selections[1])
+      filter.add({
+        "assigneeOrGroup": Filter(
+          operator_: "=",
+          values: ["me"],
+        ).toJson(),
+      });
+    if (widget.parent != null)
+      filter.add({
+        "parent": Filter(
+          operator_: "=",
+          values: [widget.parent.id.toString()],
+        ).toJson(),
+      });
+    this.filter = filter;
   }
 
   @override
@@ -82,19 +86,20 @@ class _WorkPackageTableState extends State<WorkPackageTable> {
                 );
               },
             ),
-            IconButton(
-              icon: Icon(Icons.person),
-              onPressed: () {
-                setState(() {
-                  if (filter == widget.filterAll) {
-                    filter = widget.filterMe;
-                  } else {
-                    filter = widget.filterAll;
-                  }
-                });
-              },
-            )
           ],
+        ),
+        ToggleButtons(
+          children: <Widget>[
+            Icon(Icons.real_estate_agent),
+            Icon(Icons.person),
+          ],
+          onPressed: (int index) {
+            setState(() {
+              _selections[index] = !_selections[index];
+              updateFilter();
+            });
+          },
+          isSelected: _selections,
         ),
         FutureBuilder(
           future: WorkPackagesApi(
