@@ -44,7 +44,7 @@ class _LoadingPageState extends State<LoadingPage> {
   void load(List<String> accounts) {
     loadAccounts(accounts).then((value) {
       if (value.isNotEmpty) {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (BuildContext context) => StartPage(
