@@ -4,6 +4,7 @@ import 'package:adhara_markdown/adhara_markdown.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:openproject_dart_sdk/api.dart';
+import 'package:timeago_flutter/timeago_flutter.dart';
 
 import '../../utils.dart';
 import '../../widgets.dart';
@@ -160,27 +161,31 @@ class ViewWorkPackagePage extends StatelessWidget {
           ],
         ),
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(8.0),
-        child: ListView(
-          children: <Widget>[
-            Text(
-              "Beschreibung",
-              style: Theme.of(context).textTheme.headline5,
-            ),
-            DescriptionWidget(description: workPackage.description),
-            Text(
-              "Status",
-              style: Theme.of(context).textTheme.headline5,
-            ),
-            Text(workPackage.links.status.title),
-            WorkPackageTable(
-              instance: instance,
-              project: project,
-              parent: workPackage,
-            ),
-          ],
-        ),
+        children: <Widget>[
+          Timeago(
+            builder: (context, value) {
+              return Text("Zuletzt aktualisiert $value");
+            },
+            date: workPackage.updatedAt,
+          ),
+          Text(
+            "Beschreibung",
+            style: Theme.of(context).textTheme.headline5,
+          ),
+          DescriptionWidget(description: workPackage.description),
+          Text(
+            "Status",
+            style: Theme.of(context).textTheme.headline5,
+          ),
+          Text(workPackage.links.status.title),
+          WorkPackageTable(
+            instance: instance,
+            project: project,
+            parent: workPackage,
+          ),
+        ],
       ),
     );
   }
