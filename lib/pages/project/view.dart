@@ -9,12 +9,12 @@ import 'edit.dart';
 
 class ViewProjectPage extends StatefulWidget {
   final OpenprojectInstance instance;
-  final Project project;
+  final ProjectModel project;
 
   const ViewProjectPage({
     Key key,
-    @required this.project,
-    @required this.instance,
+    required this.project,
+    required this.instance,
   }) : super(key: key);
 
   @override
@@ -54,7 +54,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
                 ProjectsApi(
                   widget.instance.client,
                 )
-                    .apiV3ProjectsIdDelete(
+                    .deleteProject(
                   widget.project.id,
                 )
                     .then((value) {
@@ -79,7 +79,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
             description: widget.project.description,
           ),
           DescriptionWidget(
-            description: widget.project.statusExplanation,
+            description: widget.project.statusExplanation as Formattable,
           ),
           WorkPackageTable(
             instance: widget.instance,

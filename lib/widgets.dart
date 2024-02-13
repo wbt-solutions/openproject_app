@@ -9,29 +9,29 @@ import 'package:pattern_formatter/pattern_formatter.dart';
 import 'globals.dart';
 
 class DescriptionWidget extends StatelessWidget {
-  final Description description;
-  final int maxLength;
+  final Formattable description;
+  final int? maxLength;
 
   const DescriptionWidget({
-    Key key,
-    @required this.description,
+    Key? key,
+    required this.description,
     this.maxLength,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    String text = description.raw;
+    String? text = description.raw;
     if (text == null || text.length == 0)
       return Container(
         width: 0,
         height: 0,
       );
     text = unescape.convert(text);
-    if (maxLength != null && text.length > maxLength)
+    if (maxLength != null && text.length > maxLength!)
       text = text.replaceRange(
-          math.min(maxLength, text.length), text.length, "...");
+          math.min(maxLength!, text.length), text.length, "...");
     switch (description.format) {
-      case DescriptionFormatEnum.markdown:
+      case FormattableFormatEnum.markdown:
         return MarkdownBody(data: text);
       default:
         print(text);
@@ -43,22 +43,22 @@ class DescriptionWidget extends StatelessWidget {
 typedef ItemBuilder<I> = Widget Function(BuildContext context, I child);
 
 class CollectionDropDownFormField<C, I> extends StatefulWidget {
-  final Project project;
-  final Link currentItemLink;
+  final ProjectModel project;
+  final Link? currentItemLink;
   final AsyncValueGetter<C> resolveAllItems;
-  final ValueChanged<I> onChanged;
+  final ValueChanged<I?> onChanged;
   final ItemBuilder<I> itemWidget;
-  final int defaultIndex;
+  final int? defaultIndex;
 
-  final InputDecoration decoration;
+  final InputDecoration? decoration;
 
   const CollectionDropDownFormField({
-    Key key,
+    Key? key,
     this.currentItemLink,
-    @required this.project,
-    @required this.onChanged,
-    @required this.resolveAllItems,
-    @required this.itemWidget,
+    required this.project,
+    required this.onChanged,
+    required this.resolveAllItems,
+    required this.itemWidget,
     this.defaultIndex,
     this.decoration,
   }) : super(key: key);
@@ -70,8 +70,8 @@ class CollectionDropDownFormField<C, I> extends StatefulWidget {
 
 class _CollectionDropDownFormFieldState<C, I>
     extends State<CollectionDropDownFormField<C, I>> {
-  Future<List<DropdownMenuItem<I>>> _menuItems;
-  I _currentItem;
+  late Future<List<DropdownMenuItem<I>>> _menuItems;
+  I? _currentItem;
 
   Future<List<DropdownMenuItem<I>>> fetch(BuildContext context) async {
     var items = (await widget.resolveAllItems())
@@ -79,8 +79,8 @@ class _CollectionDropDownFormFieldState<C, I>
     List<DropdownMenuItem<I>> menuItems = [];
     for (var item in items.embedded.elements) {
       if (widget.currentItemLink != null &&
-          widget.currentItemLink.href != null &&
-          item.links.self.href == widget.currentItemLink.href) {
+          widget.currentItemLink!.href != null &&
+          item.links.self.href == widget.currentItemLink!.href) {
         _currentItem = item;
       }
       menuItems.add(DropdownMenuItem<I>(
@@ -109,7 +109,7 @@ class _CollectionDropDownFormFieldState<C, I>
         return DropdownButtonFormField(
           items: snapshot.data,
           value: _currentItem,
-          onChanged: (I item) {
+          onChanged: (I? item) {
             setState(() {
               _currentItem = item;
             });
@@ -123,16 +123,16 @@ class _CollectionDropDownFormFieldState<C, I>
 }
 
 class DateTextFormField extends StatefulWidget {
-  final DateTime initialDate;
+  final DateTime? initialDate;
   final DateTime firstDate;
   final DateTime lastDate;
-  final void Function(DateTime date) onDateChange;
+  final void Function(DateTime? date)? onDateChange;
 
   const DateTextFormField({
-    Key key,
+    Key? key,
     this.initialDate,
-    @required this.firstDate,
-    @required this.lastDate,
+    required this.firstDate,
+    required this.lastDate,
     this.onDateChange,
   }) : super(key: key);
 
@@ -142,7 +142,7 @@ class DateTextFormField extends StatefulWidget {
 
 class _DateTextFormFieldState extends State<DateTextFormField> {
   TextEditingController _dateInputController = TextEditingController();
-  DateTime _currentDate;
+  DateTime? _currentDate;
 
   @override
   void initState() {
@@ -150,13 +150,13 @@ class _DateTextFormFieldState extends State<DateTextFormField> {
     currentDate = widget.initialDate;
   }
 
-  set currentDate(DateTime date) {
+  set currentDate(DateTime? date) {
     _currentDate = date;
     if (date != null)
       _dateInputController.text = dateFormat.format(date);
     else
       _dateInputController.text = "";
-    if (widget.onDateChange != null) widget.onDateChange(date);
+    if (widget.onDateChange != null) widget.onDateChange!(date);
   }
 
   @override
@@ -180,7 +180,7 @@ class _DateTextFormFieldState extends State<DateTextFormField> {
               initialDate: _currentDate ?? DateTime.now(),
               firstDate: widget.firstDate,
               lastDate: widget.lastDate,
-            ).then((DateTime value) {
+            ).then((DateTime? value) {
               setState(() {
                 currentDate = value;
               });

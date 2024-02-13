@@ -11,8 +11,8 @@ class StartPage extends StatefulWidget {
   final List<OpenprojectInstance> instances;
 
   StartPage({
-    Key key,
-    @required this.instances,
+    Key? key,
+    required this.instances,
   }) : super(key: key);
 
   @override
@@ -20,7 +20,7 @@ class StartPage extends StatefulWidget {
 }
 
 class _StartPageState extends State<StartPage> {
-  OpenprojectInstance currentInstance;
+  late OpenprojectInstance currentInstance;
 
   @override
   void initState() {
@@ -168,7 +168,7 @@ class _StartPageState extends State<StartPage> {
 }
 
 class ProjectTree {
-  Projects projects;
+  ProjectCollectionModel projects;
   ProjectNode rootNode = ProjectNode(null);
 
   ProjectTree(this.projects) {
@@ -176,7 +176,7 @@ class ProjectTree {
   }
 
   void _buildTree(ProjectNode node) {
-    for (Project project in projects.embedded.elements) {
+    for (ProjectModel project in projects.embedded.elements) {
       if (node.project == null) {
         if (project.links.parent.href == null) {
           _buildNode(node, project);
@@ -189,7 +189,7 @@ class ProjectTree {
     }
   }
 
-  void _buildNode(ProjectNode rootNode, Project project) {
+  void _buildNode(ProjectNode rootNode, ProjectModel project) {
     ProjectNode projectNode = ProjectNode(project);
     _buildTree(projectNode);
     rootNode.children.add(projectNode);
@@ -197,7 +197,7 @@ class ProjectTree {
 }
 
 class ProjectNode {
-  Project project;
+  ProjectModel? project;
   List<ProjectNode> children = [];
   bool isExpanded = false;
 

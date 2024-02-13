@@ -13,7 +13,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    storage.read(key: "authenticateLocal").then((String value) {
+    storage.read(key: "authenticateLocal").then((String? value) {
       setState(() {
         authOnStart = value == "true";
       });
@@ -32,9 +32,9 @@ class _SettingsPageState extends State<SettingsPage> {
           CheckboxListTile(
             title: Text("Authentifizieren"),
             value: authOnStart,
-            onChanged: (bool val) {
+            onChanged: (bool? val) {
               setState(() {
-                authOnStart = val;
+                authOnStart = val!;
               });
               storage.write(
                 key: "authenticateLocal",

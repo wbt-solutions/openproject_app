@@ -16,14 +16,13 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void initState() {
     super.initState();
-    List<String> accounts = prefs.getStringList("accounts");
+    List<String>? accounts = prefs.getStringList("accounts");
     if (accounts != null && accounts.isNotEmpty) {
-      storage.read(key: "authenticateLocal").then((String value) {
+      storage.read(key: "authenticateLocal").then((String? value) {
         if (value == "true") {
           authentication
               .authenticate(
             localizedReason: "Sie haben Authentication aktiviert",
-            sensitiveTransaction: true,
           )
               .then((bool value) {
             if (value) {

@@ -1,21 +1,21 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:openproject_dart_sdk/api.dart';
 
+import '../api_filter.dart';
 import '../pages/login.dart';
 import '../pages/work_package/edit.dart';
 import '../pages/work_package/view.dart';
 
 class WorkPackageTable extends StatefulWidget {
   final OpenprojectInstance instance;
-  final Project project;
-  final WorkPackage parent;
+  final ProjectModel project;
+  final WorkPackageModel? parent;
 
   WorkPackageTable({
-    Key key,
-    @required this.instance,
-    @required this.project,
+    Key? key,
+    required this.instance,
+    required this.project,
     this.parent,
   }) : super(key: key);
 
@@ -24,42 +24,33 @@ class WorkPackageTable extends StatefulWidget {
 }
 
 class _WorkPackageTableState extends State<WorkPackageTable> {
-  List<Map<String, Map<String, dynamic>>> filter = [];
-  List<bool> _selections = [
-    true,
-    false,
-  ];
+  FilterManager filterManager = FilterManager();
 
   @override
   void initState() {
-    updateFilter();
-    super.initState();
-  }
-
-  void updateFilter() {
-    List<Map<String, Map<String, dynamic>>> filter = [];
-    if (_selections[0])
-      filter.add({
-        "status": Filter(
-          operator_: "=",
-          values: ["1"],
-        ).toJson(),
-      });
-    if (_selections[1])
-      filter.add({
-        "assigneeOrGroup": Filter(
-          operator_: "=",
-          values: ["me"],
-        ).toJson(),
-      });
+    filterManager.addActive(
+      "status",
+      Filter(
+        operator: "=",
+        values: ["1"],
+      ),
+    );
+    filterManager.addInactive(
+      "assigneeOrGroup",
+      Filter(
+        operator: "=",
+        values: ["me"],
+      ),
+    );
     if (widget.parent != null)
-      filter.add({
-        "parent": Filter(
-          operator_: "=",
-          values: [widget.parent.id.toString()],
-        ).toJson(),
-      });
-    this.filter = filter;
+      filterManager.addActive(
+        "parent",
+        Filter(
+          operator: "=",
+          values: [widget.parent!.id.toString()],
+        ),
+      );
+    super.initState();
   }
 
   @override
@@ -70,7 +61,7 @@ class _WorkPackageTableState extends State<WorkPackageTable> {
           children: <Widget>[
             Text(
               "Arbeitspakete",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
             IconButton(
               icon: Icon(Icons.add),
@@ -95,27 +86,26 @@ class _WorkPackageTableState extends State<WorkPackageTable> {
           ],
           onPressed: (int index) {
             setState(() {
-              _selections[index] = !_selections[index];
-              updateFilter();
+              filterManager.toggleAtIndex(index);
             });
           },
-          isSelected: _selections,
+          isSelected: filterManager.states(),
         ),
         FutureBuilder(
           future: WorkPackagesApi(
             widget.instance.client,
-          ).apiV3ProjectsIdWorkPackagesGet(
-            widget.project.id,
-            filters: jsonEncode(filter),
+          ).getProjectWorkPackageCollection(
+            widget.project.id!,
+            filters: filterManager.toJsonString(),
           ),
-          builder:
-              (BuildContext context, AsyncSnapshot<WorkPackages> snapshot) {
+          builder: (BuildContext context,
+              AsyncSnapshot<WorkPackagesModel> snapshot) {
             if (!snapshot.hasData) {
               return Center(
                 child: CircularProgressIndicator(),
               );
             } else {
-              WorkPackages workPackages = snapshot.data;
+              WorkPackagesModel workPackages = snapshot.data;
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(

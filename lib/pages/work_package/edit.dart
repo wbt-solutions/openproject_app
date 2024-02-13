@@ -11,16 +11,16 @@ import '../login.dart';
 
 class EditWorkPackagePage extends StatefulWidget {
   final OpenprojectInstance instance;
-  final Project project;
-  final WorkPackage workPackage;
-  final WorkPackage parent;
+  final ProjectModel project;
+  final WorkPackageModel workPackage;
+  final WorkPackageModel parent;
 
   const EditWorkPackagePage({
     Key key,
     this.workPackage,
     this.parent,
-    @required this.project,
-    @required this.instance,
+    required this.project,
+    required this.instance,
   }) : super(key: key);
 
   @override
@@ -28,20 +28,20 @@ class EditWorkPackagePage extends StatefulWidget {
 }
 
 class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
-  Status _status;
+  StatusModel _status;
   WPType _wpType;
   TextEditingController _subjectController = TextEditingController();
   MarkdownEditorController _descriptionController = MarkdownEditorController();
-  User _assignee;
-  User _accountable;
+  Object _assignee;
+  AvailableAssigneesModelEmbeddedElementsInner _accountable;
   Duration _estimatedTime;
   TextEditingController _remainingHoursController = TextEditingController();
   DateTime _from;
   DateTime _to;
   TextEditingController _progressController = TextEditingController();
-  Category _category;
-  Version _version;
-  Priority _priority;
+  CategoryModel _category;
+  VersionModel _version;
+  PriorityModel _priority;
 
   @override
   void initState() {
@@ -77,33 +77,33 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
         child: ListView(
           padding: const EdgeInsets.all(8.0),
           children: <Widget>[
-            CollectionDropDownFormField<Statuses, Status>(
+            CollectionDropDownFormField<StatusCollectionModel, StatusModel>(
               currentItemLink: widget.workPackage?.links?.status,
               project: widget.project,
-              onChanged: (Status status) {
+              onChanged: (StatusModel status) {
                 _status = status;
               },
               resolveAllItems: () => StatusesApi(
                 widget.instance.client,
-              ).apiV3StatusesGet(),
-              itemWidget: (BuildContext context, Status status) {
+              ).listAllStatuses(),
+              itemWidget: (BuildContext context, StatusModel status) {
                 return Text(status.name);
               },
               defaultIndex: 0,
               decoration: InputDecoration(labelText: "Status"),
             ),
-            CollectionDropDownFormField<WPTypes, WPType>(
+            CollectionDropDownFormField<TypesByProjectModel, TypesModelEmbeddedElementsInner>(
               currentItemLink: widget.workPackage?.links?.type,
               project: widget.project,
-              onChanged: (WPType type) {
+              onChanged: (Object type) {
                 _wpType = type;
               },
               resolveAllItems: () => TypesApi(
                 widget.instance.client,
-              ).apiV3ProjectsProjectIdTypesGet(
+              ).listTypesAvailableInAProject(
                 widget.project.id,
               ),
-              itemWidget: (BuildContext context, WPType type) {
+              itemWidget: (BuildContext context, Object type) {
                 return Text(
                   type.name,
                   style: TextStyle(
@@ -133,36 +133,36 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               tokenConfigs: [],
             ),
             Divider(),
-            CollectionDropDownFormField<Users, User>(
+            CollectionDropDownFormField<AvailableAssigneesModel, AvailableAssigneesModelEmbeddedElementsInner>(
               currentItemLink: widget.workPackage?.links?.assignee,
               project: widget.project,
-              onChanged: (User user) {
+              onChanged: (Object user) {
                 _assignee = user;
               },
               resolveAllItems: () => WorkPackagesApi(
                 widget.instance.client,
-              ).apiV3ProjectsProjectIdAvailableAssigneesGet(
+              ).availableAssignees(
                 widget.project.id,
               ),
-              itemWidget: (BuildContext context, User user) {
+              itemWidget: (BuildContext context, AvailableAssigneesModelEmbeddedElementsInner user) {
                 return Text(user.name);
               },
               decoration: InputDecoration(
                 labelText: "Assignee",
               ),
             ),
-            CollectionDropDownFormField<Users, User>(
+            CollectionDropDownFormField<AvailableResponsiblesModel, AvailableAssigneesModelEmbeddedElementsInner>(
               currentItemLink: widget.workPackage?.links?.responsible,
               project: widget.project,
-              onChanged: (User user) {
+              onChanged: (Object user) {
                 _accountable = user;
               },
               resolveAllItems: () => WorkPackagesApi(
                 widget.instance.client,
-              ).apiV3ProjectsProjectIdAvailableResponsiblesGet(
+              ).availableResponsibles(
                 widget.project.id,
               ),
-              itemWidget: (BuildContext context, User user) {
+              itemWidget: (BuildContext context, Object user) {
                 return Text(user.name);
               },
               decoration: InputDecoration(
@@ -239,46 +239,46 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 }
               },
             ),
-            CollectionDropDownFormField<Categories, Category>(
+            CollectionDropDownFormField<CategoriesByProjectModel, CategoryModel>(
               currentItemLink: widget.workPackage?.links?.category,
               project: widget.project,
-              onChanged: (Category category) {
+              onChanged: (CategoryModel category) {
                 _category = category;
               },
               resolveAllItems: () => CategoriesApi(
                 widget.instance.client,
-              ).apiV3ProjectsProjectIdCategoriesGet(widget.project.id),
-              itemWidget: (BuildContext context, Category category) {
+              ).listCategoriesOfAProject(widget.project.id),
+              itemWidget: (BuildContext context, CategoryModel category) {
                 return Text(category.name);
               },
               decoration: InputDecoration(labelText: "Category"),
             ),
-            CollectionDropDownFormField<Versions, Version>(
+            CollectionDropDownFormField<VersionsByProjectModel, VersionsModelEmbeddedElementsInner>(
               currentItemLink: widget.workPackage?.links?.version,
               project: widget.project,
-              onChanged: (Version version) {
+              onChanged: (Object version) {
                 _version = version;
               },
               resolveAllItems: () => VersionsApi(
                 widget.instance.client,
-              ).apiV3ProjectsProjectIdVersionsGet(
+              ).listVersionsAvailableInAProject(
                 widget.project.id,
               ),
-              itemWidget: (BuildContext context, Version version) {
+              itemWidget: (BuildContext context, VersionsModelEmbeddedElementsInner version) {
                 return Text(version.name);
               },
               decoration: InputDecoration(labelText: "Version"),
             ),
-            CollectionDropDownFormField<Priorities, Priority>(
+            CollectionDropDownFormField<PrioritiesModel, PriorityModel>(
               currentItemLink: widget.workPackage?.links?.priority,
               project: widget.project,
-              onChanged: (Priority priority) {
+              onChanged: (PriorityModel priority) {
                 _priority = priority;
               },
               resolveAllItems: () => PrioritiesApi(
                 widget.instance.client,
-              ).apiV3PrioritiesGet(),
-              itemWidget: (BuildContext context, Priority priority) {
+              ).listAllPriorities(),
+              itemWidget: (BuildContext context, PriorityModel priority) {
                 return Text(priority.name);
               },
               defaultIndex: 1,
@@ -289,21 +289,22 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 widget.workPackage == null ? "Erstellen" : "Speichern",
               ),
               onPressed: () {
-                WorkPackage w = WorkPackage();
-                w.links = WorkPackageLinks();
+                WorkPackageModel w = WorkPackageModel();
+                w.links = WorkPackageModelLinks();
 
-                w.links.status = Link()..href = _status.links.self.href;
-                w.links.type = Link()..href = _wpType.links.self.href;
+                w.links.status = WorkPackageModelLinksStatus(href: _status.links.self.href);
+                w.links.type = WorkPackageModelLinksType(href: _wpType.links.self.href);
 
                 w.subject = _subjectController.text;
-                w.description = Description()
-                  ..raw = _descriptionController.text;
+                w.description = WorkPackageModelDescription(
+                  format: WorkPackageModelDescriptionFormatEnum.markdown,
+                  raw: _descriptionController.text,
+                );
 
                 if (_assignee != null)
-                  w.links.assignee = Link()..href = _assignee.links.self.href;
+                  w.links.assignee = WorkPackageModelLinksAssignee(href: _assignee.links.self.href);
                 if (_accountable != null)
-                  w.links.responsible = Link()
-                    ..href = _accountable.links.self.href;
+                  w.links.responsible = WorkPackageModelLinksResponsible(href: _accountable.links.self.href);
 
                 w.estimatedTime = _estimatedTime?.toIso8601String();
 
@@ -312,26 +313,25 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 w.percentageDone = int.tryParse(_progressController.text);
 
                 if (_category != null)
-                  w.links.category = Link()..href = _category.links.self.href;
+                  w.links.category = WorkPackageModelLinksCategory(href: _category.links.self.href);
                 if (_version != null)
-                  w.links.version = Link()..href = _version.links.self.href;
+                  w.links.version = WorkPackageModelLinksVersion(href: _version.links.self.href);
                 if (_priority != null)
-                  w.links.priority = Link()..href = _priority.links.self.href;
+                  w.links.priority = WorkPackageModelLinksPriority(href: _priority.links.self.href);
 
                 if (widget.workPackage != null) {
                   w.lockVersion = widget.workPackage.lockVersion;
                   WorkPackagesApi(
                     widget.instance.client,
-                  ).apiV3WorkPackagesIdPatch(
+                  ).updateWorkPackage(
                     widget.workPackage.id,
-                    workPackage: w,
+                    workPackageModel: w,
                   );
                 } else {
                   WorkPackagesApi(
                     widget.instance.client,
-                  ).apiV3ProjectsIdWorkPackagesPost(
-                    widget.project.id,
-                    w,
+                  ).createProjectWorkPackage(
+                    widget.project.id
                   );
                 }
               },

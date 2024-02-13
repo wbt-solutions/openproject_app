@@ -7,10 +7,10 @@ import '../login.dart';
 
 class EditProjectPage extends StatefulWidget {
   final OpenprojectInstance instance;
-  final Project project;
+  final ProjectModel? project;
 
   const EditProjectPage({
-    Key key,
+    Key? key,
     this.project,
     this.instance,
   }) : super(key: key);
@@ -21,11 +21,11 @@ class EditProjectPage extends StatefulWidget {
 
 class _EditProjectPageState extends State<EditProjectPage> {
   TextEditingController _nameController = TextEditingController();
-  Project _parenProject;
+  ProjectModel _parenProject;
   MarkdownEditorController _descriptionController = MarkdownEditorController();
   TextEditingController _identifierController = TextEditingController();
-  bool _public = false;
-  ProjectStatusEnum _status;
+  bool? _public = false;
+  ProjectModelLinksStatus _status;
   MarkdownEditorController _statusDescriptionController =
       MarkdownEditorController();
 
@@ -36,7 +36,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
       _nameController.text = widget.project.name;
       _identifierController.text = widget.project.identifier;
       _public = widget.project.public;
-      _status = widget.project.status;
+      _status = widget.project.links.status;
     }
   }
 
@@ -47,7 +47,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
         title: Text(
           widget.project == null
               ? "Neues Projekt"
-              : "${widget.project.name} bearbeiten",
+              : "${widget.project!.name} bearbeiten",
         ),
       ),
       body: Form(
@@ -58,19 +58,19 @@ class _EditProjectPageState extends State<EditProjectPage> {
               controller: _nameController,
               decoration: InputDecoration(labelText: "Name"),
             ),
-            CollectionDropDownFormField<Projects, Project>(
+            CollectionDropDownFormField<Projects, ProjectModel>(
               currentItemLink: widget.project?.links?.parent,
-              onChanged: (Project project) {
+              onChanged: (ProjectModel project) {
                 _parenProject = project;
               },
               project: widget.project,
-              itemWidget: (BuildContext context, Project project) {
+              itemWidget: (BuildContext context, ProjectModel project) {
                 return Text(project.name);
               },
               resolveAllItems: () {
                 return ProjectsApi(
                   widget.instance.client,
-                ).apiV3ProjectsAvailableParentProjectsGet(
+                ).listAvailableParentProjectCandidates(
                   of_: widget.project?.identifier,
                 );
               },
@@ -96,7 +96,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
             Text("Public"),
             Checkbox(
               value: _public,
-              onChanged: (bool val) {
+              onChanged: (bool? val) {
                 setState(() {
                   _public = val;
                 });
@@ -114,7 +114,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   ),
               ],
               value: _status,
-              onChanged: (ProjectStatusEnum status) {
+              onChanged: (ProjectModelLinksStatus status) {
                 _status = status;
               },
             ),
@@ -132,32 +132,35 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 widget.project == null ? "Erstellen" : "Speichern",
               ),
               onPressed: () {
-                Project sendProject = Project();
+                ProjectModel sendProject = ProjectModel();
                 sendProject.name = _nameController.text;
-                sendProject.links = ProjectLinks();
+                sendProject.links = ProjectModelLinks();
                 if (_parenProject != null) {
-                  sendProject.links.parent = Link();
-                  sendProject.links.parent.href = _parenProject.links.self.href;
+                  sendProject.links.parent =
+                      ProjectModelLinksParent(href: _parenProject.links.self.href);
                 }
-                sendProject.description = Description();
-                sendProject.description.raw = _descriptionController.text;
+                sendProject.description = Formattable(
+                  format: FormattableFormatEnum.markdown,
+                  raw: _descriptionController.text,
+                );
                 sendProject.identifier = _identifierController.text;
                 sendProject.public = _public;
                 sendProject.status = _status;
-                sendProject.statusExplanation = Description();
-                sendProject.statusExplanation.raw =
-                    _statusDescriptionController.text;
+                sendProject.statusExplanation = ProjectModelStatusExplanation(
+                  format: ProjectModelStatusExplanationFormatEnum.markdown,
+                  raw: _statusDescriptionController.text,
+                );
 
                 if (widget.project == null) {
                   ProjectsApi(
                     widget.instance.client,
-                  ).apiV3ProjectsPost(sendProject);
+                  ).createProject(body: sendProject);
                 } else {
                   ProjectsApi(
                     widget.instance.client,
-                  ).apiV3ProjectsIdPatch(
+                  ).updateProject(
                     widget.project.id,
-                    sendProject,
+                    body: sendProject,
                   );
                 }
               },

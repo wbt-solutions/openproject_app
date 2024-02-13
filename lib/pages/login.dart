@@ -21,7 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _hostController = TextEditingController();
   TextEditingController _apiKeyController = TextEditingController();
-  String message;
+  String? message;
 
   @override
   Widget build(BuildContext context) {
@@ -55,9 +55,9 @@ class _LoginPageState extends State<LoginPage> {
                         children: <Widget>[
                           if (message != null)
                             Text(
-                              message,
+                              message!,
                               style: TextStyle(
-                                color: Theme.of(context).errorColor,
+                                color: Theme.of(context).colorScheme.error,
                               ),
                             ),
                           TextFormField(
@@ -149,35 +149,38 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class OpenprojectInstance {
-  ApiClient client;
-  User me;
-  ProjectTree projectTree;
+  late ApiClient client;
+  UserModel? me;
+  ProjectTree? projectTree;
 
   OpenprojectInstance({
-    String authenticationType,
-    String host,
-    String accessToken,
+    required String authenticationType,
+    required String host,
+    required String accessToken,
   }) {
-    client = ApiClient(basePath: host);
+    var auth;
     switch (authenticationType) {
       case 'basicAuth':
-        client.getAuthentication<HttpBasicAuth>('basicAuth').username =
-            'apikey';
-        client.getAuthentication<HttpBasicAuth>('basicAuth').password =
-            accessToken;
+        auth = HttpBasicAuth(
+          username: 'apikey',
+          password: accessToken,
+        );
         break;
       case 'oAuth':
-        client.getAuthentication<OAuth>('oAuth').accessToken = accessToken;
+        auth = OAuth(
+          accessToken: accessToken,
+        );
         break;
     }
+    client = ApiClient(basePath: host, authentication: auth);
     client.addDefaultHeader("Content-Type", "application/json");
     client.addDefaultHeader("Accept-Encoding", "gzip");
   }
 
   Future<void> refresh() async {
     List<dynamic> userData = await Future.wait([
-      UsersApi(client).apiV3UsersIdGet("me"),
-      ProjectsApi(client).apiV3ProjectsGet(),
+      UsersApi(client).viewUser("me"),
+      ProjectsApi(client).listProjects(),
     ]);
     me = userData[0];
     projectTree = ProjectTree(userData[1]);

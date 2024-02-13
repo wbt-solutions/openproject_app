@@ -15,14 +15,14 @@ import 'edit.dart';
 
 class ViewWorkPackagePage extends StatelessWidget {
   final OpenprojectInstance instance;
-  final Project project;
-  final WorkPackage workPackage;
+  final ProjectModel project;
+  final WorkPackageModel workPackage;
 
   const ViewWorkPackagePage({
     Key key,
-    @required this.workPackage,
-    @required this.instance,
-    @required this.project,
+    required this.workPackage,
+    required this.instance,
+    required this.project,
   }) : super(key: key);
 
   @override
@@ -59,7 +59,7 @@ class ViewWorkPackagePage extends StatelessWidget {
                 Navigator.of(context).pop();
                 WorkPackagesApi(
                   instance.client,
-                ).apiV3WorkPackagesIdDelete(workPackage.id).then((value) {
+                ).deleteWorkPackage(workPackage.id).then((value) {
                   Navigator.of(context).pop();
                 });
               },
@@ -72,13 +72,16 @@ class ViewWorkPackagePage extends StatelessWidget {
                 WorkPackagesApi(
                   instance.client,
                 )
-                    .apiV3WorkPackagesIdPatch(
+                    .updateWorkPackage(
                   workPackage.id,
-                  workPackage: WorkPackage()
-                    ..lockVersion = workPackage.lockVersion
-                    ..links = WorkPackageLinks()
-                    ..links.assignee = Link()
-                    ..links.assignee.href = instance.me.links.self.href,
+                  workPackageModel: WorkPackageModel(
+                    lockVersion: workPackage.lockVersion,
+                    links: WorkPackageModelLinks(
+                      assignee: WorkPackageModelLinksAssignee(
+                        href: instance.me.links.self.href,
+                      ),
+                    ),
+                  ),
                 )
                     .catchError((Object error) {
                   if (error is ApiException) {
@@ -100,30 +103,31 @@ class ViewWorkPackagePage extends StatelessWidget {
                 Navigator.of(context).pop();
                 StatusesApi(
                   instance.client,
-                ).apiV3StatusesGet().then((Statuses statuses) {
+                ).listAllStatuses().then((StatusCollectionModel statuses) {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return SimpleDialog(
                         title: Text("Wähle den Status:"),
                         children: <Widget>[
-                          for (Status status in statuses.embedded.elements)
+                          for (StatusModel status
+                              in statuses.embedded.elements)
                             SimpleDialogOption(
                               child: Text(status.name),
                               onPressed: () {
                                 WorkPackagesApi(
                                   instance.client,
                                 )
-                                    .apiV3WorkPackagesIdPatch(
+                                    .updateWorkPackage(
                                   workPackage.id,
-                                  workPackage: WorkPackage()
-                                    ..lockVersion = workPackage.lockVersion
-                                    ..links = WorkPackageLinks()
-                                    ..links.status = Link()
-                                    ..links.status.href =
-                                        status.links.self.href,
+                                  workPackageModel: WorkPackageModel(
+                                    lockVersion: workPackage.lockVersion,
+                                    links: WorkPackageModelLinks(
+                                        // TODO status.href = status.links.self.href,
+                                        ),
+                                  ),
                                 )
-                                    .then((WorkPackage workPackage) {
+                                    .then((WorkPackagePatchModel workPackage) {
                                   Navigator.of(context).pop();
                                 }).catchError((Object error) {
                                   if (error is ApiException) {
@@ -172,12 +176,12 @@ class ViewWorkPackagePage extends StatelessWidget {
           ),
           Text(
             "Beschreibung",
-            style: Theme.of(context).textTheme.headline5,
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
-          DescriptionWidget(description: workPackage.description),
+          DescriptionWidget(description: workPackage.description as Formattable),
           Text(
             "Status",
-            style: Theme.of(context).textTheme.headline5,
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           Text(workPackage.links.status.title),
           WorkPackageTable(
@@ -193,14 +197,14 @@ class ViewWorkPackagePage extends StatelessWidget {
 
 class TimeEntryBookingDialog extends StatefulWidget {
   final OpenprojectInstance instance;
-  final Project project;
-  final WorkPackage workPackage;
+  final ProjectModel project;
+  final WorkPackageModel workPackage;
 
   const TimeEntryBookingDialog({
     Key key,
-    @required this.project,
-    @required this.workPackage,
-    @required this.instance,
+    required this.project,
+    required this.workPackage,
+    required this.instance,
   }) : super(key: key);
 
   @override
@@ -209,9 +213,9 @@ class TimeEntryBookingDialog extends StatefulWidget {
 
 class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
   TextEditingController _hoursController = TextEditingController();
-  List<DropdownMenuItem<TimeEntriesActivity>> _timeEntriesActivitiesDropdown =
-      [];
-  TimeEntriesActivity _currentTimeEntriesActivity;
+  List<DropdownMenuItem<TimeEntryActivityModel>>
+      _timeEntriesActivitiesDropdown = [];
+  TimeEntryActivityModel _currentTimeEntriesActivity;
   MarkdownEditorController _commentController = MarkdownEditorController();
   DateTime _spentDate;
 
@@ -223,21 +227,23 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
       "/api/v3/time_entries/form",
       'POST',
       [],
-      TimeEntry(
+      TimeEntryModel(
         spentOn: DateTime.now(),
-        links: TimeEntryLinks(
-          workPackage: widget.workPackage.links.self,
+        links: TimeEntryModelLinks(
+          workPackage: TimeEntryModelLinksWorkPackage(
+              href: widget.workPackage.links.self.href,
+          ),
         ),
       ),
       {},
       {},
       "application/json",
-      ["basicAuth"],
     )
         .then((value) {
-      List<TimeEntriesActivity> timeEntriesActivities =
-          TimeEntriesActivity.listFromJson(jsonDecode(value.body)["_embedded"]
-              ["schema"]["activity"]["_embedded"]["allowedValues"]);
+      List<TimeEntryActivityModel> timeEntriesActivities =
+          TimeEntryActivityModel.listFromJson(
+              jsonDecode(value.body)["_embedded"]["schema"]["activity"]
+                  ["_embedded"]["allowedValues"]);
       _currentTimeEntriesActivity = timeEntriesActivities[0];
       _timeEntriesActivitiesDropdown = timeEntriesActivities
           .map((e) => DropdownMenuItem(
@@ -301,9 +307,9 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
             TimeEntriesApi(
               widget.instance.client,
             )
-                .apiV3TimeEntriesPost(
-              TimeEntry(
-                links: TimeEntryLinks(
+                .createTimeEntry(
+              TimeEntryModel(
+                links: TimeEntryModelLinks(
                   project: widget.project.links.self,
                   workPackage: widget.workPackage.links.self,
                   activity: _currentTimeEntriesActivity.links.self,
@@ -313,7 +319,10 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
                     _hoursController.text,
                   ),
                 ).toIso8601String(),
-                comment: Description(raw: _commentController.text),
+                comment: Formattable(
+                  raw: _commentController.text,
+                  format: FormattableFormatEnum.markdown,
+                ),
                 spentOn: _spentDate,
               ),
             )
