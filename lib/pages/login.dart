@@ -67,6 +67,9 @@ class _LoginPageState extends State<LoginPage> {
                             controller: _hostController,
                             autocorrect: false,
                             validator: (value) {
+                              if (value == null) {
+                                return null;
+                              }
                               final uri = Uri.tryParse(value);
                               if (uri == null || !uri.isAbsolute) {
                                 return "Bitte gebe einen validen Host ein";
@@ -150,8 +153,8 @@ class _LoginPageState extends State<LoginPage> {
 
 class OpenprojectInstance {
   late ApiClient client;
-  UserModel? me;
-  ProjectTree? projectTree;
+  late UserModel me;
+  late ProjectTree projectTree;
 
   OpenprojectInstance({
     required String authenticationType,

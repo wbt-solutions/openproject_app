@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../globals.dart';
 import 'login.dart';
@@ -73,7 +73,7 @@ class _LoadingPageState extends State<LoadingPage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    launch("mailto:development@wbt-solutions.de");
+                    launchUrlString("mailto:development@wbt-solutions.de");
                   },
                   child: Text("Fehler melden"),
                 ),
@@ -95,11 +95,14 @@ class _LoadingPageState extends State<LoadingPage> {
   }
 
   Future<List<OpenprojectInstance>> loadAccounts(List<String> accounts) async {
-    List<String> keys =
+    List<String?> keys =
         await Future.wait(accounts.map((e) => storage.read(key: e)));
     List<OpenprojectInstance> instances = [];
     for (int i = 0; i < accounts.length; i++) {
-      Map<String, dynamic> config = jsonDecode(keys[i]);
+      if (keys[i] == null) {
+        continue;
+      }
+      Map<String, dynamic> config = jsonDecode(keys[i]!);
       instances.add(OpenprojectInstance(
         accessToken: config['accessToken'],
         authenticationType: config['authenticationType'],

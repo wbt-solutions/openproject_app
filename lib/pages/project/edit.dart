@@ -12,7 +12,7 @@ class EditProjectPage extends StatefulWidget {
   const EditProjectPage({
     Key? key,
     this.project,
-    this.instance,
+    required this.instance,
   }) : super(key: key);
 
   @override
@@ -21,11 +21,11 @@ class EditProjectPage extends StatefulWidget {
 
 class _EditProjectPageState extends State<EditProjectPage> {
   TextEditingController _nameController = TextEditingController();
-  ProjectModel _parenProject;
+  ProjectModel? _parenProject;
   MarkdownEditorController _descriptionController = MarkdownEditorController();
   TextEditingController _identifierController = TextEditingController();
   bool? _public = false;
-  ProjectModelLinksStatus _status;
+  ProjectModelLinksStatus? _status;
   MarkdownEditorController _statusDescriptionController =
       MarkdownEditorController();
 
@@ -33,10 +33,10 @@ class _EditProjectPageState extends State<EditProjectPage> {
   void initState() {
     super.initState();
     if (widget.project != null) {
-      _nameController.text = widget.project.name;
-      _identifierController.text = widget.project.identifier;
-      _public = widget.project.public;
-      _status = widget.project.links.status;
+      _nameController.text = widget.project!.name!;
+      _identifierController.text = widget.project!.identifier!;
+      _public = widget.project!.public;
+      _status = widget.project!.links!.status;
     }
   }
 
@@ -58,14 +58,13 @@ class _EditProjectPageState extends State<EditProjectPage> {
               controller: _nameController,
               decoration: InputDecoration(labelText: "Name"),
             ),
-            CollectionDropDownFormField<Projects, ProjectModel>(
+            CollectionDropDownFormField<ListAvailableParentProjectCandidatesModel, ProjectModel, ProjectModelLinksParent>(
               currentItemLink: widget.project?.links?.parent,
-              onChanged: (ProjectModel project) {
+              onChanged: (ProjectModel? project) {
                 _parenProject = project;
               },
-              project: widget.project,
               itemWidget: (BuildContext context, ProjectModel project) {
-                return Text(project.name);
+                return Text(project.name!);
               },
               resolveAllItems: () {
                 return ProjectsApi(
@@ -136,8 +135,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 sendProject.name = _nameController.text;
                 sendProject.links = ProjectModelLinks();
                 if (_parenProject != null) {
-                  sendProject.links.parent =
-                      ProjectModelLinksParent(href: _parenProject.links.self.href);
+                  sendProject.links!.parent =
+                      ProjectModelLinksParent(href: _parenProject!.links!.self.href);
                 }
                 sendProject.description = Formattable(
                   format: FormattableFormatEnum.markdown,
@@ -154,13 +153,13 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 if (widget.project == null) {
                   ProjectsApi(
                     widget.instance.client,
-                  ).createProject(body: sendProject);
+                  ).createProject(projectModel: sendProject,);
                 } else {
                   ProjectsApi(
                     widget.instance.client,
                   ).updateProject(
-                    widget.project.id,
-                    body: sendProject,
+                    widget.project!.id!,
+                    projectModel: sendProject,
                   );
                 }
               },

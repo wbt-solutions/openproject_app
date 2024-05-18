@@ -42,10 +42,9 @@ class DescriptionWidget extends StatelessWidget {
 
 typedef ItemBuilder<I> = Widget Function(BuildContext context, I child);
 
-class CollectionDropDownFormField<C, I> extends StatefulWidget {
-  final ProjectModel project;
-  final Link? currentItemLink;
-  final AsyncValueGetter<C> resolveAllItems;
+class CollectionDropDownFormField<C, I, L> extends StatefulWidget {
+  final L? currentItemLink;
+  final AsyncValueGetter<C?> resolveAllItems;
   final ValueChanged<I?> onChanged;
   final ItemBuilder<I> itemWidget;
   final int? defaultIndex;
@@ -55,7 +54,6 @@ class CollectionDropDownFormField<C, I> extends StatefulWidget {
   const CollectionDropDownFormField({
     Key? key,
     this.currentItemLink,
-    required this.project,
     required this.onChanged,
     required this.resolveAllItems,
     required this.itemWidget,
@@ -64,12 +62,12 @@ class CollectionDropDownFormField<C, I> extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _CollectionDropDownFormFieldState<C, I> createState() =>
-      _CollectionDropDownFormFieldState<C, I>();
+  _CollectionDropDownFormFieldState<C, I, L> createState() =>
+      _CollectionDropDownFormFieldState<C, I, L>();
 }
 
-class _CollectionDropDownFormFieldState<C, I>
-    extends State<CollectionDropDownFormField<C, I>> {
+class _CollectionDropDownFormFieldState<C, I, L>
+    extends State<CollectionDropDownFormField<C, I, L>> {
   late Future<List<DropdownMenuItem<I>>> _menuItems;
   I? _currentItem;
 
@@ -77,11 +75,14 @@ class _CollectionDropDownFormFieldState<C, I>
     var items = (await widget.resolveAllItems())
         as dynamic; // We all know it's the collection we get delivered, but to have the compiler silent we say we get something we don't know
     List<DropdownMenuItem<I>> menuItems = [];
+    if (items == null) return menuItems;
     for (var item in items.embedded.elements) {
-      if (widget.currentItemLink != null &&
-          widget.currentItemLink!.href != null &&
-          item.links.self.href == widget.currentItemLink!.href) {
-        _currentItem = item;
+      if (widget.currentItemLink != null) {
+        var link = widget.currentItemLink as dynamic;
+        if (link.href != null &&
+            item.links.self.href == link.href) {
+          _currentItem = item;
+        }
       }
       menuItems.add(DropdownMenuItem<I>(
         child: widget.itemWidget(context, item),

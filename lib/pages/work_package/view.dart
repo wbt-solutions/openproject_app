@@ -19,7 +19,7 @@ class ViewWorkPackagePage extends StatelessWidget {
   final WorkPackageModel workPackage;
 
   const ViewWorkPackagePage({
-    Key key,
+    Key? key,
     required this.workPackage,
     required this.instance,
     required this.project,
@@ -59,7 +59,7 @@ class ViewWorkPackagePage extends StatelessWidget {
                 Navigator.of(context).pop();
                 WorkPackagesApi(
                   instance.client,
-                ).deleteWorkPackage(workPackage.id).then((value) {
+                ).deleteWorkPackage(workPackage.id!).then((value) {
                   Navigator.of(context).pop();
                 });
               },
@@ -73,7 +73,7 @@ class ViewWorkPackagePage extends StatelessWidget {
                   instance.client,
                 )
                     .updateWorkPackage(
-                  workPackage.id,
+                  workPackage.id!,
                   workPackageModel: WorkPackageModel(
                     lockVersion: workPackage.lockVersion,
                     links: WorkPackageModelLinks(
@@ -103,7 +103,11 @@ class ViewWorkPackagePage extends StatelessWidget {
                 Navigator.of(context).pop();
                 StatusesApi(
                   instance.client,
-                ).listAllStatuses().then((StatusCollectionModel statuses) {
+                ).listAllStatuses().then((StatusCollectionModel? statuses) {
+                  if (statuses == null) {
+                    // TODO maybe show toast
+                    return;
+                  }
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
@@ -113,13 +117,13 @@ class ViewWorkPackagePage extends StatelessWidget {
                           for (StatusModel status
                               in statuses.embedded.elements)
                             SimpleDialogOption(
-                              child: Text(status.name),
+                              child: Text(status.name!),
                               onPressed: () {
                                 WorkPackagesApi(
                                   instance.client,
                                 )
                                     .updateWorkPackage(
-                                  workPackage.id,
+                                  workPackage.id!,
                                   workPackageModel: WorkPackageModel(
                                     lockVersion: workPackage.lockVersion,
                                     links: WorkPackageModelLinks(
@@ -127,7 +131,7 @@ class ViewWorkPackagePage extends StatelessWidget {
                                         ),
                                   ),
                                 )
-                                    .then((WorkPackagePatchModel workPackage) {
+                                    .then((WorkPackagePatchModel? workPackage) {
                                   Navigator.of(context).pop();
                                 }).catchError((Object error) {
                                   if (error is ApiException) {
@@ -172,7 +176,7 @@ class ViewWorkPackagePage extends StatelessWidget {
             builder: (context, value) {
               return Text("Zuletzt aktualisiert $value");
             },
-            date: workPackage.updatedAt,
+            date: workPackage.updatedAt!,
           ),
           Text(
             "Beschreibung",
@@ -183,7 +187,7 @@ class ViewWorkPackagePage extends StatelessWidget {
             "Status",
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          Text(workPackage.links.status.title),
+          Text(workPackage.links.status.title!),
           WorkPackageTable(
             instance: instance,
             project: project,
@@ -201,7 +205,7 @@ class TimeEntryBookingDialog extends StatefulWidget {
   final WorkPackageModel workPackage;
 
   const TimeEntryBookingDialog({
-    Key key,
+    Key? key,
     required this.project,
     required this.workPackage,
     required this.instance,
@@ -217,7 +221,7 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
       _timeEntriesActivitiesDropdown = [];
   TimeEntryActivityModel _currentTimeEntriesActivity;
   MarkdownEditorController _commentController = MarkdownEditorController();
-  DateTime _spentDate;
+  DateTime? _spentDate;
 
   @override
   void initState() {
@@ -267,8 +271,8 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
               Text("Zeit buchen"),
               DateTextFormField(
                 initialDate: DateTime.now(),
-                firstDate: widget.project.createdAt,
-                lastDate: widget.project.createdAt.add(Duration(days: 3650)),
+                firstDate: widget.project.createdAt!,
+                lastDate: widget.project.createdAt!.add(Duration(days: 3650)),
                 onDateChange: (date) => _spentDate = date,
               ),
               TextFormField(
@@ -308,7 +312,7 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
               widget.instance.client,
             )
                 .createTimeEntry(
-              TimeEntryModel(
+              timeEntryModel: TimeEntryModel(
                 links: TimeEntryModelLinks(
                   project: widget.project.links.self,
                   workPackage: widget.workPackage.links.self,
@@ -317,11 +321,11 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
                 hours: SerializableDuration.fromHours(
                   NumberFormat().parse(
                     _hoursController.text,
-                  ),
+                  ).toDouble(),
                 ).toIso8601String(),
-                comment: Formattable(
+                comment: TimeEntryModelComment(
                   raw: _commentController.text,
-                  format: FormattableFormatEnum.markdown,
+                  format: TimeEntryModelCommentFormatEnum.markdown,
                 ),
                 spentOn: _spentDate,
               ),

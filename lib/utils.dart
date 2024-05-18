@@ -100,7 +100,7 @@ extension SerializableDuration on Duration {
   }
 
   static int _parseTime(String duration, String timeUnit,
-      {bool hasDecimals: false}) {
+      {bool hasDecimals = false}) {
     final decimalTimeMatch =
         RegExp(r"\d+\.\d+" + timeUnit).firstMatch(duration);
 
@@ -128,7 +128,11 @@ extension SerializableDuration on Duration {
 
 void apiErrorHandler(error, BuildContext context) {
   if (error is ApiException) {
-    Map<String, dynamic> openProjectError = jsonDecode(error.message);
+    if (error.message == null) {
+      // TODO Maybe better handling, with error code
+      throw error;
+    }
+    Map<String, dynamic> openProjectError = jsonDecode(error.message!);
     showDialog(
       context: context,
       builder: (context) {

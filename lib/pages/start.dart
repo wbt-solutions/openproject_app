@@ -56,9 +56,10 @@ class _StartPageState extends State<StartPage> {
               ),
             ),
             ListTile(
-              title: DropdownButton(
+              title: DropdownButton<OpenprojectInstance>(
                 isExpanded: true,
                 onChanged: (value) {
+                  if (value == null) return;
                   setState(() {
                     currentInstance = value;
                   });
@@ -133,12 +134,12 @@ class _StartPageState extends State<StartPage> {
             return ListTile(
               title: Padding(
                 padding: leftPadding,
-                child: Text(item.project.name),
+                child: Text(item.project!.name!),
               ),
               subtitle: Padding(
                 padding: leftPadding,
                 child: DescriptionWidget(
-                  description: item.project.description,
+                  description: item.project!.description!,
                   maxLength: 25,
                 ),
               ),
@@ -147,7 +148,7 @@ class _StartPageState extends State<StartPage> {
                   context,
                   MaterialPageRoute(
                     builder: (BuildContext context) => ViewProjectPage(
-                      project: item.project,
+                      project: item.project!,
                       instance: instance,
                     ),
                   ),
@@ -178,11 +179,11 @@ class ProjectTree {
   void _buildTree(ProjectNode node) {
     for (ProjectModel project in projects.embedded.elements) {
       if (node.project == null) {
-        if (project.links.parent.href == null) {
+        if (project.links!.parent?.href == null) {
           _buildNode(node, project);
         }
       } else {
-        if (project.links.parent.href == node.project.links.self.href) {
+        if (project.links!.parent!.href == node.project!.links!.self.href) {
           _buildNode(node, project);
         }
       }

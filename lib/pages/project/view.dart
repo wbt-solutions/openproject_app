@@ -12,7 +12,7 @@ class ViewProjectPage extends StatefulWidget {
   final ProjectModel project;
 
   const ViewProjectPage({
-    Key key,
+    Key? key,
     required this.project,
     required this.instance,
   }) : super(key: key);
@@ -27,7 +27,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
     return Scaffold(
       appBar: AppBar(
         leading: ScaffoldBack(),
-        title: Text(widget.project.name),
+        title: Text(widget.project.name!),
       ),
       endDrawer: Drawer(
         child: ListView(
@@ -55,7 +55,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
                   widget.instance.client,
                 )
                     .deleteProject(
-                  widget.project.id,
+                  widget.project.id!,
                 )
                     .then((value) {
                   Navigator.of(context).pop();
@@ -76,7 +76,7 @@ class _ViewProjectPageState extends State<ViewProjectPage> {
         padding: const EdgeInsets.all(8.0),
         children: <Widget>[
           DescriptionWidget(
-            description: widget.project.description,
+            description: widget.project.description!,
           ),
           DescriptionWidget(
             description: widget.project.statusExplanation as Formattable,

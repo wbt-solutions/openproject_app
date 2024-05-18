@@ -99,13 +99,13 @@ class _WorkPackageTableState extends State<WorkPackageTable> {
             filters: filterManager.toJsonString(),
           ),
           builder: (BuildContext context,
-              AsyncSnapshot<WorkPackagesModel> snapshot) {
+              AsyncSnapshot<WorkPackagesModel?> snapshot) {
             if (!snapshot.hasData) {
               return Center(
                 child: CircularProgressIndicator(),
               );
             } else {
-              WorkPackagesModel workPackages = snapshot.data;
+              WorkPackagesModel workPackages = snapshot.data!;
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
@@ -135,14 +135,14 @@ class _WorkPackageTableState extends State<WorkPackageTable> {
                   rows: workPackages.embedded.elements
                       .where(
                         (workPackage) =>
-                            workPackage.links.parent.href ==
-                            widget.parent?.links?.self?.href,
+                            workPackage.links.parent?.href ==
+                            widget.parent?.links.self.href,
                       )
                       .map(
                         (workPackage) => DataRow(
                           cells: [
                             DataCell(
-                              Text(workPackage.links.type.title),
+                              Text(workPackage.links.type.title!),
                             ),
                             DataCell(
                               Text(workPackage.id.toString()),
@@ -151,16 +151,16 @@ class _WorkPackageTableState extends State<WorkPackageTable> {
                               Text(workPackage.subject),
                             ),
                             DataCell(
-                              Text(workPackage.links.status.title),
+                              Text(workPackage.links.status.title!),
                             ),
                             DataCell(
-                              Text(workPackage.links.assignee.title ?? "-"),
+                              Text(workPackage.links.assignee?.title ?? "-"),
                             ),
                             DataCell(
-                              Text(workPackage.links.priority.title),
+                              Text(workPackage.links.priority.title!),
                             ),
                           ],
-                          onSelectChanged: (bool selected) {
+                          onSelectChanged: (bool? selected) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(

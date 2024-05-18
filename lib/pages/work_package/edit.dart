@@ -12,11 +12,11 @@ import '../login.dart';
 class EditWorkPackagePage extends StatefulWidget {
   final OpenprojectInstance instance;
   final ProjectModel project;
-  final WorkPackageModel workPackage;
-  final WorkPackageModel parent;
+  final WorkPackageModel? workPackage;
+  final WorkPackageModel? parent;
 
   const EditWorkPackagePage({
-    Key key,
+    Key? key,
     this.workPackage,
     this.parent,
     required this.project,
@@ -28,38 +28,37 @@ class EditWorkPackagePage extends StatefulWidget {
 }
 
 class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
-  StatusModel _status;
-  WPType _wpType;
+  StatusModel? _status;
+  TypesByProjectModelAllOfEmbeddedElements? _wpType;
   TextEditingController _subjectController = TextEditingController();
   MarkdownEditorController _descriptionController = MarkdownEditorController();
-  Object _assignee;
-  AvailableAssigneesModelEmbeddedElementsInner _accountable;
-  Duration _estimatedTime;
+  AvailableAssigneesModelAllOfEmbeddedElements? _assignee;
+  Duration? _estimatedTime;
   TextEditingController _remainingHoursController = TextEditingController();
-  DateTime _from;
-  DateTime _to;
+  DateTime? _from;
+  DateTime? _to;
   TextEditingController _progressController = TextEditingController();
-  CategoryModel _category;
-  VersionModel _version;
-  PriorityModel _priority;
+  CategoriesByProjectModelAllOfEmbeddedElements? _category;
+  VersionsByProjectModelAllOfEmbeddedElements? _version;
+  PriorityModel? _priority;
 
   @override
   void initState() {
     super.initState();
     if (widget.workPackage != null) {
-      _subjectController.text = widget.workPackage.subject;
-      if (widget.workPackage.estimatedTime != null) {
+      _subjectController.text = widget.workPackage!.subject;
+      if (widget.workPackage!.estimatedTime != null) {
         _estimatedTime =
-            SerializableDuration.parse(widget.workPackage.estimatedTime);
+            SerializableDuration.parse(widget.workPackage!.estimatedTime!);
       }
       // TODO _remainingHoursController.text =
-      if (widget.workPackage.startDate != null) {
-        _from = widget.workPackage.startDate;
+      if (widget.workPackage!.startDate != null) {
+        _from = widget.workPackage!.startDate!;
       }
-      if (widget.workPackage.dueDate != null) {
-        _to = widget.workPackage.dueDate;
+      if (widget.workPackage!.dueDate != null) {
+        _to = widget.workPackage!.dueDate!;
       }
-      _progressController.text = widget.workPackage.percentageDone?.toString();
+      _progressController.text = widget.workPackage!.percentageDone!.toString();
     }
   }
 
@@ -70,44 +69,42 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
         title: Text(
           widget.workPackage == null
               ? "Neues WorkPackage"
-              : "${widget.workPackage.subject} bearbeiten",
+              : "${widget.workPackage!.subject} bearbeiten",
         ),
       ),
       body: Form(
         child: ListView(
           padding: const EdgeInsets.all(8.0),
           children: <Widget>[
-            CollectionDropDownFormField<StatusCollectionModel, StatusModel>(
-              currentItemLink: widget.workPackage?.links?.status,
-              project: widget.project,
-              onChanged: (StatusModel status) {
+            CollectionDropDownFormField<StatusCollectionModel, StatusModel, WorkPackageModelLinksStatus>(
+              currentItemLink: widget.workPackage?.links.status,
+              onChanged: (StatusModel? status) {
                 _status = status;
               },
               resolveAllItems: () => StatusesApi(
                 widget.instance.client,
               ).listAllStatuses(),
               itemWidget: (BuildContext context, StatusModel status) {
-                return Text(status.name);
+                return Text(status.name!);
               },
               defaultIndex: 0,
               decoration: InputDecoration(labelText: "Status"),
             ),
-            CollectionDropDownFormField<TypesByProjectModel, TypesModelEmbeddedElementsInner>(
-              currentItemLink: widget.workPackage?.links?.type,
-              project: widget.project,
-              onChanged: (Object type) {
+            CollectionDropDownFormField<TypesByProjectModel, TypesByProjectModelAllOfEmbeddedElements, WorkPackageModelLinksType>(
+              currentItemLink: widget.workPackage?.links.type,
+              onChanged: (TypesByProjectModelAllOfEmbeddedElements? type) {
                 _wpType = type;
               },
               resolveAllItems: () => TypesApi(
                 widget.instance.client,
               ).listTypesAvailableInAProject(
-                widget.project.id,
+                widget.project.id!,
               ),
-              itemWidget: (BuildContext context, Object type) {
+              itemWidget: (BuildContext context, TypesByProjectModelAllOfEmbeddedElements type) {
                 return Text(
-                  type.name,
+                  type.name!,
                   style: TextStyle(
-                    color: HexColor.fromHex(type.color),
+                    color: HexColor.fromHex(type.color!),
                   ),
                 );
               },
@@ -133,45 +130,26 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               tokenConfigs: [],
             ),
             Divider(),
-            CollectionDropDownFormField<AvailableAssigneesModel, AvailableAssigneesModelEmbeddedElementsInner>(
-              currentItemLink: widget.workPackage?.links?.assignee,
-              project: widget.project,
-              onChanged: (Object user) {
+            CollectionDropDownFormField<AvailableAssigneesModel, AvailableAssigneesModelAllOfEmbeddedElements, WorkPackageModelLinksAssignee>(
+              currentItemLink: widget.workPackage?.links.assignee,
+              onChanged: (AvailableAssigneesModelAllOfEmbeddedElements? user) {
                 _assignee = user;
               },
               resolveAllItems: () => WorkPackagesApi(
                 widget.instance.client,
-              ).availableAssignees(
-                widget.project.id,
+              ).projectAvailableAssignees(
+                widget.project.id!,
               ),
-              itemWidget: (BuildContext context, AvailableAssigneesModelEmbeddedElementsInner user) {
+              itemWidget: (BuildContext context, AvailableAssigneesModelAllOfEmbeddedElements user) {
                 return Text(user.name);
               },
               decoration: InputDecoration(
                 labelText: "Assignee",
               ),
             ),
-            CollectionDropDownFormField<AvailableResponsiblesModel, AvailableAssigneesModelEmbeddedElementsInner>(
-              currentItemLink: widget.workPackage?.links?.responsible,
-              project: widget.project,
-              onChanged: (Object user) {
-                _accountable = user;
-              },
-              resolveAllItems: () => WorkPackagesApi(
-                widget.instance.client,
-              ).availableResponsibles(
-                widget.project.id,
-              ),
-              itemWidget: (BuildContext context, Object user) {
-                return Text(user.name);
-              },
-              decoration: InputDecoration(
-                labelText: "Accountable",
-              ),
-            ),
             Divider(),
             TextFormField(
-              initialValue: _estimatedTime?.inHoursDecimal?.toString(),
+              initialValue: _estimatedTime?.inHoursDecimal.toString(),
               decoration: InputDecoration(labelText: "Estimated time"),
               inputFormatters: [
                 ThousandsFormatter(
@@ -186,7 +164,7 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                   _estimatedTime = null;
                 } else {
                   _estimatedTime = SerializableDuration.fromHours(
-                    NumberFormat().parse(value),
+                    NumberFormat().parse(value).toDouble(),
                   );
                 }
               },
@@ -229,8 +207,13 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 FilteringTextInputFormatter.digitsOnly,
               ],
               validator: (value) {
-                int percent = int.tryParse(value);
-                if (percent > 100) {
+                if (value == null) {
+                  return "Zahl eingeben";
+                };
+                int? percent = int.tryParse(value);
+                if (percent == null) {
+                  return "Zahl eingeben";
+                } else if (percent > 100) {
                   return "Maximal 100%";
                 } else if (percent < 0) {
                   return "Minimum 0%";
@@ -239,47 +222,44 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 }
               },
             ),
-            CollectionDropDownFormField<CategoriesByProjectModel, CategoryModel>(
-              currentItemLink: widget.workPackage?.links?.category,
-              project: widget.project,
-              onChanged: (CategoryModel category) {
+            CollectionDropDownFormField<CategoriesByProjectModel, CategoriesByProjectModelAllOfEmbeddedElements, WorkPackageModelLinksCategory>(
+              currentItemLink: widget.workPackage?.links.category,
+              onChanged: (CategoriesByProjectModelAllOfEmbeddedElements? category) {
                 _category = category;
               },
               resolveAllItems: () => CategoriesApi(
                 widget.instance.client,
-              ).listCategoriesOfAProject(widget.project.id),
-              itemWidget: (BuildContext context, CategoryModel category) {
-                return Text(category.name);
+              ).listCategoriesOfAProject(widget.project.id!),
+              itemWidget: (BuildContext context, CategoriesByProjectModelAllOfEmbeddedElements category) {
+                return Text(category.name!);
               },
               decoration: InputDecoration(labelText: "Category"),
             ),
-            CollectionDropDownFormField<VersionsByProjectModel, VersionsModelEmbeddedElementsInner>(
-              currentItemLink: widget.workPackage?.links?.version,
-              project: widget.project,
-              onChanged: (Object version) {
+            CollectionDropDownFormField<VersionsByProjectModel, VersionsByProjectModelAllOfEmbeddedElements, WorkPackageModelLinksVersion>(
+              currentItemLink: widget.workPackage?.links.version,
+              onChanged: (VersionsByProjectModelAllOfEmbeddedElements? version) {
                 _version = version;
               },
               resolveAllItems: () => VersionsApi(
                 widget.instance.client,
               ).listVersionsAvailableInAProject(
-                widget.project.id,
+                widget.project.id!,
               ),
-              itemWidget: (BuildContext context, VersionsModelEmbeddedElementsInner version) {
+              itemWidget: (BuildContext context, VersionsByProjectModelAllOfEmbeddedElements version) {
                 return Text(version.name);
               },
               decoration: InputDecoration(labelText: "Version"),
             ),
-            CollectionDropDownFormField<PrioritiesModel, PriorityModel>(
-              currentItemLink: widget.workPackage?.links?.priority,
-              project: widget.project,
-              onChanged: (PriorityModel priority) {
+            CollectionDropDownFormField<PriorityCollectionModel, PriorityModel, WorkPackageModelLinksPriority>(
+              currentItemLink: widget.workPackage?.links.priority,
+              onChanged: (PriorityModel? priority) {
                 _priority = priority;
               },
               resolveAllItems: () => PrioritiesApi(
                 widget.instance.client,
               ).listAllPriorities(),
               itemWidget: (BuildContext context, PriorityModel priority) {
-                return Text(priority.name);
+                return Text(priority.name!);
               },
               defaultIndex: 1,
               decoration: InputDecoration(labelText: "Priority"),
@@ -292,8 +272,8 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 WorkPackageModel w = WorkPackageModel();
                 w.links = WorkPackageModelLinks();
 
-                w.links.status = WorkPackageModelLinksStatus(href: _status.links.self.href);
-                w.links.type = WorkPackageModelLinksType(href: _wpType.links.self.href);
+                w.links.status = WorkPackageModelLinksStatus(href: _status.links!.self.href);
+                w.links.type = WorkPackageModelLinksType(href: _wpType.links!.self.href);
 
                 w.subject = _subjectController.text;
                 w.description = WorkPackageModelDescription(
@@ -302,9 +282,7 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 );
 
                 if (_assignee != null)
-                  w.links.assignee = WorkPackageModelLinksAssignee(href: _assignee.links.self.href);
-                if (_accountable != null)
-                  w.links.responsible = WorkPackageModelLinksResponsible(href: _accountable.links.self.href);
+                  w.links.assignee = WorkPackageModelLinksAssignee(href: _assignee!.links.self.href);
 
                 w.estimatedTime = _estimatedTime?.toIso8601String();
 
@@ -313,25 +291,26 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 w.percentageDone = int.tryParse(_progressController.text);
 
                 if (_category != null)
-                  w.links.category = WorkPackageModelLinksCategory(href: _category.links.self.href);
+                  w.links.category = WorkPackageModelLinksCategory(href: _category!.links!.self.href);
                 if (_version != null)
-                  w.links.version = WorkPackageModelLinksVersion(href: _version.links.self.href);
+                  w.links.version = WorkPackageModelLinksVersion(href: _version!.links!.self.href);
                 if (_priority != null)
-                  w.links.priority = WorkPackageModelLinksPriority(href: _priority.links.self.href);
+                  w.links.priority = WorkPackageModelLinksPriority(href: _priority!.links!.self.href);
 
                 if (widget.workPackage != null) {
-                  w.lockVersion = widget.workPackage.lockVersion;
+                  w.lockVersion = widget.workPackage!.lockVersion;
                   WorkPackagesApi(
                     widget.instance.client,
                   ).updateWorkPackage(
-                    widget.workPackage.id,
+                    widget.workPackage!.id!,
                     workPackageModel: w,
                   );
                 } else {
                   WorkPackagesApi(
                     widget.instance.client,
                   ).createProjectWorkPackage(
-                    widget.project.id
+                    widget.project.id!,
+                    workPackageModel: w,
                   );
                 }
               },
