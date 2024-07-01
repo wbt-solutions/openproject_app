@@ -1,5 +1,6 @@
 name: openproject_app
 description: An OpenProject flutter app
+repository: https://github.com/wbt-solutions/openproject_app.git
 
 publish_to: 'none'
 
@@ -15,29 +16,29 @@ dependencies:
     sdk: flutter
   openproject_dart_sdk:
     path: ../openproject_dart_sdk
-  flutter_secure_storage: ^9.0.0
+  flutter_secure_storage: ^9.2.2
   cached_network_image: ^3.3.1
-  flutter_markdown: ^0.6.19
+  flutter_markdown: ^0.7.3
   adhara_markdown:
     git:
       url: https://github.com/wbt-solutions/flutter_markdown.git
       ref: null-safety
-  local_auth: ^2.1.8
-  table_calendar: ^3.0.9
-  file_picker: ^6.1.1
-  intl: ^0.18.0
-  pattern_formatter: ^3.0.0
-  sentry_flutter: ^7.16.0
-  shared_preferences: ^2.2.2
+  local_auth: ^2.2.0
+  table_calendar: ^3.1.2
+  file_picker: ^8.0.6
+  intl: any
+  pattern_formatter: ^4.0.0
+  sentry_flutter: ^8.3.0
+  shared_preferences: ^2.2.3
   html_unescape: ^2.0.0
-  url_launcher: ^6.2.4
+  url_launcher: ^6.3.0
   timeago_flutter: ^3.6.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
-  flutter_native_splash: ^2.3.10
+  flutter_native_splash: ^2.4.0
 
 flutter:
   uses-material-design: true
@@ -76,10 +77,16 @@ flutter:
 flutter_icons:
   android: true
   ios: true
+  web:
+    generate: true
+  windows:
+    generate: true
+  macos:
+    generate: true
   image_path: "assets/images/icon.png"
   remove_alpha_ios: true
 
 flutter_native_splash:
   image: assets/images/logo_openproject_white_big.png
   color: "1a67a3"
-  android_disable_fullscreen: true
+  fullscreen: false
