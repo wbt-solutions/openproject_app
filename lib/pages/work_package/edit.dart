@@ -76,7 +76,8 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
         child: ListView(
           padding: const EdgeInsets.all(8.0),
           children: <Widget>[
-            CollectionDropDownFormField<StatusCollectionModel, StatusModel, WorkPackageModelLinksStatus>(
+            CollectionDropDownFormField<StatusCollectionModel, StatusModel,
+                WorkPackageModelLinksStatus>(
               currentItemLink: widget.workPackage?.links.status,
               onChanged: (StatusModel? status) {
                 _status = status;
@@ -90,7 +91,10 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               defaultIndex: 0,
               decoration: InputDecoration(labelText: "Status"),
             ),
-            CollectionDropDownFormField<TypesByProjectModel, TypesByProjectModelAllOfEmbeddedElements, WorkPackageModelLinksType>(
+            CollectionDropDownFormField<
+                TypesByProjectModel,
+                TypesByProjectModelAllOfEmbeddedElements,
+                WorkPackageModelLinksType>(
               currentItemLink: widget.workPackage?.links.type,
               onChanged: (TypesByProjectModelAllOfEmbeddedElements? type) {
                 _wpType = type;
@@ -100,7 +104,8 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               ).listTypesAvailableInAProject(
                 widget.project.id!,
               ),
-              itemWidget: (BuildContext context, TypesByProjectModelAllOfEmbeddedElements type) {
+              itemWidget: (BuildContext context,
+                  TypesByProjectModelAllOfEmbeddedElements type) {
                 return Text(
                   type.name!,
                   style: TextStyle(
@@ -130,7 +135,10 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               tokenConfigs: [],
             ),
             Divider(),
-            CollectionDropDownFormField<AvailableAssigneesModel, AvailableAssigneesModelAllOfEmbeddedElements, WorkPackageModelLinksAssignee>(
+            CollectionDropDownFormField<
+                AvailableAssigneesModel,
+                AvailableAssigneesModelAllOfEmbeddedElements,
+                WorkPackageModelLinksAssignee>(
               currentItemLink: widget.workPackage?.links.assignee,
               onChanged: (AvailableAssigneesModelAllOfEmbeddedElements? user) {
                 _assignee = user;
@@ -140,7 +148,8 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               ).projectAvailableAssignees(
                 widget.project.id!,
               ),
-              itemWidget: (BuildContext context, AvailableAssigneesModelAllOfEmbeddedElements user) {
+              itemWidget: (BuildContext context,
+                  AvailableAssigneesModelAllOfEmbeddedElements user) {
                 return Text(user.name);
               },
               decoration: InputDecoration(
@@ -209,7 +218,7 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               validator: (value) {
                 if (value == null) {
                   return "Zahl eingeben";
-                };
+                }
                 int? percent = int.tryParse(value);
                 if (percent == null) {
                   return "Zahl eingeben";
@@ -222,22 +231,31 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 }
               },
             ),
-            CollectionDropDownFormField<CategoriesByProjectModel, CategoriesByProjectModelAllOfEmbeddedElements, WorkPackageModelLinksCategory>(
+            CollectionDropDownFormField<
+                CategoriesByProjectModel,
+                CategoriesByProjectModelAllOfEmbeddedElements,
+                WorkPackageModelLinksCategory>(
               currentItemLink: widget.workPackage?.links.category,
-              onChanged: (CategoriesByProjectModelAllOfEmbeddedElements? category) {
+              onChanged:
+                  (CategoriesByProjectModelAllOfEmbeddedElements? category) {
                 _category = category;
               },
               resolveAllItems: () => CategoriesApi(
                 widget.instance.client,
               ).listCategoriesOfAProject(widget.project.id!),
-              itemWidget: (BuildContext context, CategoriesByProjectModelAllOfEmbeddedElements category) {
+              itemWidget: (BuildContext context,
+                  CategoriesByProjectModelAllOfEmbeddedElements category) {
                 return Text(category.name!);
               },
               decoration: InputDecoration(labelText: "Category"),
             ),
-            CollectionDropDownFormField<VersionsByProjectModel, VersionsByProjectModelAllOfEmbeddedElements, WorkPackageModelLinksVersion>(
+            CollectionDropDownFormField<
+                VersionsByProjectModel,
+                VersionsByProjectModelAllOfEmbeddedElements,
+                WorkPackageModelLinksVersion>(
               currentItemLink: widget.workPackage?.links.version,
-              onChanged: (VersionsByProjectModelAllOfEmbeddedElements? version) {
+              onChanged:
+                  (VersionsByProjectModelAllOfEmbeddedElements? version) {
                 _version = version;
               },
               resolveAllItems: () => VersionsApi(
@@ -245,12 +263,14 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
               ).listVersionsAvailableInAProject(
                 widget.project.id!,
               ),
-              itemWidget: (BuildContext context, VersionsByProjectModelAllOfEmbeddedElements version) {
+              itemWidget: (BuildContext context,
+                  VersionsByProjectModelAllOfEmbeddedElements version) {
                 return Text(version.name);
               },
               decoration: InputDecoration(labelText: "Version"),
             ),
-            CollectionDropDownFormField<PriorityCollectionModel, PriorityModel, WorkPackageModelLinksPriority>(
+            CollectionDropDownFormField<PriorityCollectionModel, PriorityModel,
+                WorkPackageModelLinksPriority>(
               currentItemLink: widget.workPackage?.links.priority,
               onChanged: (PriorityModel? priority) {
                 _priority = priority;
@@ -272,8 +292,10 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 WorkPackageModel w = WorkPackageModel();
                 w.links = WorkPackageModelLinks();
 
-                w.links.status = WorkPackageModelLinksStatus(href: _status.links!.self.href);
-                w.links.type = WorkPackageModelLinksType(href: _wpType.links!.self.href);
+                w.links.status = WorkPackageModelLinksStatus(
+                    href: _status!.links!.self.href);
+                w.links.type =
+                    WorkPackageModelLinksType(href: _wpType!.links!.self.href);
 
                 w.subject = _subjectController.text;
                 w.description = WorkPackageModelDescription(
@@ -282,7 +304,8 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 );
 
                 if (_assignee != null)
-                  w.links.assignee = WorkPackageModelLinksAssignee(href: _assignee!.links.self.href);
+                  w.links.assignee = WorkPackageModelLinksAssignee(
+                      href: _assignee!.links.self.href);
 
                 w.estimatedTime = _estimatedTime?.toIso8601String();
 
@@ -291,11 +314,14 @@ class _EditWorkPackagePageState extends State<EditWorkPackagePage> {
                 w.percentageDone = int.tryParse(_progressController.text);
 
                 if (_category != null)
-                  w.links.category = WorkPackageModelLinksCategory(href: _category!.links!.self.href);
+                  w.links.category = WorkPackageModelLinksCategory(
+                      href: _category!.links!.self.href);
                 if (_version != null)
-                  w.links.version = WorkPackageModelLinksVersion(href: _version!.links!.self.href);
+                  w.links.version = WorkPackageModelLinksVersion(
+                      href: _version!.links!.self.href);
                 if (_priority != null)
-                  w.links.priority = WorkPackageModelLinksPriority(href: _priority!.links!.self.href);
+                  w.links.priority = WorkPackageModelLinksPriority(
+                      href: _priority!.links!.self.href);
 
                 if (widget.workPackage != null) {
                   w.lockVersion = widget.workPackage!.lockVersion;

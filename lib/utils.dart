@@ -105,7 +105,7 @@ extension SerializableDuration on Duration {
         RegExp(r"\d+\.\d+" + timeUnit).firstMatch(duration);
 
     if (hasDecimals && decimalTimeMatch != null) {
-      final timeString = decimalTimeMatch.group(0);
+      final timeString = decimalTimeMatch.group(0)!;
       double decimals =
           double.parse(timeString.substring(0, timeString.length - 1));
       return (decimals * Duration.microsecondsPerSecond).round();
@@ -113,7 +113,7 @@ extension SerializableDuration on Duration {
       final timeMatch = RegExp(r"\d+" + timeUnit).firstMatch(duration);
 
       if (timeMatch == null) return 0;
-      final timeString = timeMatch.group(0);
+      final timeString = timeMatch.group(0)!;
       return int.parse(timeString.substring(0, timeString.length - 1)) *
           (hasDecimals ? Duration.microsecondsPerSecond : 1);
     }

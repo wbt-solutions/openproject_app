@@ -90,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                           MaterialButton(
                             child: Text("Anmelden"),
                             onPressed: () {
-                              if (_formKey.currentState.validate()) {
+                              if (_formKey.currentState!.validate()) {
                                 final instance = OpenprojectInstance(
                                   accessToken: _apiKeyController.text,
                                   authenticationType: "basicAuth",

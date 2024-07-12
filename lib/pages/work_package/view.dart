@@ -114,8 +114,7 @@ class ViewWorkPackagePage extends StatelessWidget {
                       return SimpleDialog(
                         title: Text("Wähle den Status:"),
                         children: <Widget>[
-                          for (StatusModel status
-                              in statuses.embedded.elements)
+                          for (StatusModel status in statuses.embedded.elements)
                             SimpleDialogOption(
                               child: Text(status.name!),
                               onPressed: () {
@@ -182,7 +181,9 @@ class ViewWorkPackagePage extends StatelessWidget {
             "Beschreibung",
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          DescriptionWidget(description: workPackage.description as Formattable),
+          DescriptionWidget(
+            description: workPackage.description as Formattable,
+          ),
           Text(
             "Status",
             style: Theme.of(context).textTheme.headlineSmall,
@@ -219,7 +220,7 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
   TextEditingController _hoursController = TextEditingController();
   List<DropdownMenuItem<TimeEntryActivityModel>>
       _timeEntriesActivitiesDropdown = [];
-  TimeEntryActivityModel _currentTimeEntriesActivity;
+  late TimeEntryActivityModel _currentTimeEntriesActivity;
   MarkdownEditorController _commentController = MarkdownEditorController();
   DateTime? _spentDate;
 
@@ -235,7 +236,7 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
         spentOn: DateTime.now(),
         links: TimeEntryModelLinks(
           workPackage: TimeEntryModelLinksWorkPackage(
-              href: widget.workPackage.links.self.href,
+            href: widget.workPackage.links.self.href,
           ),
         ),
       ),
@@ -319,9 +320,11 @@ class _TimeEntryBookingDialogState extends State<TimeEntryBookingDialog> {
                   activity: _currentTimeEntriesActivity.links.self,
                 ),
                 hours: SerializableDuration.fromHours(
-                  NumberFormat().parse(
-                    _hoursController.text,
-                  ).toDouble(),
+                  NumberFormat()
+                      .parse(
+                        _hoursController.text,
+                      )
+                      .toDouble(),
                 ).toIso8601String(),
                 comment: TimeEntryModelComment(
                   raw: _commentController.text,
